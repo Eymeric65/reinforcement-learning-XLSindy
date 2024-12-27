@@ -11,7 +11,7 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
 
 
 class Agent(nn.Module):
-    def __init__(self, envs):
+    def __init__(self, envs,model_path=None):
         super().__init__()
         self.critic = nn.Sequential(
             layer_init(nn.Linear(np.array(envs.observation_space.shape).prod(), 64)),
@@ -28,6 +28,9 @@ class Agent(nn.Module):
             layer_init(nn.Linear(64, np.prod(envs.action_space.shape)), std=0.01),
         )
         self.actor_logstd = nn.Parameter(torch.zeros(1,np.prod(envs.action_space.shape)))
+
+        if model_path is not None:
+            self.load_model(model_path)
 
     def _flatten_space(self,x):
         return x.view(x.size(0), -1)
@@ -53,3 +56,7 @@ class Agent(nn.Module):
         if action is None:
             action = probs.sample()
         return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
+    
+    def load_model(self, path):
+        state_dict = torch.load(path)
+        self.load_state_dict(state_dict)

@@ -16,6 +16,7 @@ import sympy as sp
 
 from rl_util import environment
 from rl_util import agent
+from rl_util import reward_init
 
 
 """
@@ -40,9 +41,9 @@ class Args:
     # Algorithm specific arguments
     env_id: str = "rK4-DoublePendulum-v0"
     """the id of the environment"""
-    total_timesteps: int = 1000000
+    total_timesteps: int = 500000
     """total timesteps of the experiments"""
-    learning_rate: float = 3e-4
+    learning_rate: float = 6e-4
     """the learning rate of the optimizer"""
     #num_envs: int = 1
     #"""the number of parallel game environments"""
@@ -64,7 +65,7 @@ class Args:
     """the surrogate clipping coefficient"""
     clip_vloss: bool = True
     """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
-    ent_coef: float = 0.01
+    ent_coef: float = 0.001
     """coefficient of the entropy"""
     vf_coef: float = 0.5
     """coefficient of the value function"""
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     link2_length = 1.0
     mass1 = 0.8
     mass2 = 0.8
-    initial_state = np.array([[2, 0], [0, 0]])  # Initial state matrix (k,2)
+    initial_state = np.array([[np.pi, 0], [np.pi, 0]])  # Initial state matrix (k,2)
     friction_forces = [-1.4, -1.2]
 
     # Symbols and symbolic matrix generation
@@ -133,35 +134,12 @@ if __name__ == "__main__":
         * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
     # Loop frequency
-    frequency = 100
+    frequency = 25
+
+    frame_skip=10
 
     dt = 1 / frequency
     # End of creation of double pendulum environment
-
-    def reward(state,action):
-
-        action,state = action[0],state[0]
-
-        position = state[::2]
-        velocity = state[1::2]
-        # Reward function to minimize energy while going upward
-        # Reward for minimizing energy (kinetic + potential)
-        kinetic_energy = 0.5 * (mass1 * (velocity[0] ** 2) + mass2 * (velocity[1] ** 2))
-        #action_penalty =  (mass1 * (action[0] ** 2) +  (action[1] ** 2))
-        #potential_energy = mass1 * 9.81 * (1 - np.cos(position[0])) + mass2 * 9.81 * (1 - np.cos(position[1]))
-        energy_penalty = kinetic_energy #+ potential_energy
-        
-        # Reward for moving upward
-        upward_reward = - (np.cos(position[0]) + np.cos(position[1]) - 2)
-        
-        # Total reward
-        total_reward = -energy_penalty   + upward_reward # -action_penalty*0.1
-        
-        return total_reward, 0
-
-    def initial_function():
-        return  np.reshape(initial_state, (1,-1))
-
 
     env = environment.Rk4Environment(
                                     symbols_matrix,
@@ -169,9 +147,9 @@ if __name__ == "__main__":
                                     L,
                                     substitutions,
                                     dt,
-                                    reward_function= reward,
+                                    reward_function= reward_init.reward_1,
                                     fluid_forces=friction_forces,
-                                    initial_function=initial_function)
+                                    initial_function=reward_init.initial_function_1)
 
     agent = agent.Agent(env).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
@@ -213,13 +191,23 @@ if __name__ == "__main__":
             logprobs[step] = logprob     
 
             # TRY NOT TO MODIFY: execute the game and log data.
-            next_obs, reward, terminations, truncations, infos = env.step(action.cpu().numpy())
+            for i in range(frame_skip):
+                next_obs, reward, terminations, truncations, infos = env.step(action.cpu().numpy())
+
             next_done = np.logical_or(terminations, truncations)
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(next_done).to(device)   
             # Log the action taken
             for i, act in enumerate(action.cpu().numpy().flatten()):
                 writer.add_scalar(f"charts/action_taken_{i}", act, global_step)
+                writer.add_scalar(f"charts/position_{i}", next_obs[0,i*2], global_step)
+            
+            if "final_info" in infos:
+                for info in infos["final_info"]:
+                    if info and "episode" in info:
+                        print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+                        writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
+                        writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
             #print("debug",next_done.size())    
 

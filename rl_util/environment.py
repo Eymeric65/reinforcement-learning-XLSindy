@@ -14,9 +14,10 @@ class Rk4Environment:
             substitution_dict: Dict[str, float],
             dt:float,
             reward_function:Callable[[np.ndarray],Tuple[float,bool]],
-            fluid_forces: List[int] = None,
+            fluid_forces: List[int] = [],
             max_time:float = 60,
-            initial_function:Callable[[],np.ndarray] = None):
+            initial_function:Callable[[],np.ndarray] = None,
+            reset_overtime:bool = True):
         
         if(initial_function is None):
             raise NotImplementedError("Initial function not implemented")
@@ -30,6 +31,8 @@ class Rk4Environment:
         # This following function construction assume that the action taken will define the force for the whole timestep (step action function)
         self.dynamics_function = xlsindy.dynamics_modeling.dynamics_function_fixed_external(self._acceleration_func) 
         self.dt = dt
+
+        self.reset_overtime = reset_overtime
 
         self.initial_function = initial_function
 
@@ -52,21 +55,24 @@ class Rk4Environment:
         if(self.t is None or self.system_state is None):
             raise NotImplementedError("Need to run environment reset()")
 
-        info = None # Not implemented
+        info = {} # Not implemented
 
-        if(self.t >= self.max_time):
+        if(self.t >= self.max_time and self.reset_overtime):
             self.reset()
             return self.system_state, 0, [0], [1], info
 
-        self.system_state = self._rk4_step(self.dynamics_function(action),self.t,self.system_state,self.dt)
+        SS = self._rk4_step(self.dynamics_function(action),self.t,self.system_state,self.dt)
+
+        self.system_state = SS
         self.t = self.t + self.dt
         
         reward ,terminated =self.reward_function(self.system_state,action)
 
+        if terminated:
+            self.reset()
         
-        truncated = 0 # Not implemented
 
-        return self.system_state, reward, [terminated], [truncated], info
+        return SS, reward, [terminated], [0], info
 
     def _rk4_step(self,func, t, y, dt):
         k1 = func(t, y)
