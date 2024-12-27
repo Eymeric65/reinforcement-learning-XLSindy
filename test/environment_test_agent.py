@@ -72,7 +72,7 @@ double_pendulum_environment = environment.Rk4Environment(
                                                     L,
                                                     substitutions,
                                                     dt,
-                                                    reward_function= lambda x,y:(0,0),
+                                                    reward_function= reward_init.reward_1,
                                                     fluid_forces=friction_forces,
                                                     initial_function=reward_init.initial_function_1,
                                                     reset_overtime=False)
@@ -89,7 +89,9 @@ t_array = []
 
 reward_arr = []
 
-while double_pendulum_environment.t < end_time :
+t=0
+
+while t < end_time :
 
     with torch.no_grad():
         action, _, _, _ = agent.get_action_and_value(torch.Tensor(double_pendulum_environment.system_state).to(device))
@@ -100,12 +102,13 @@ while double_pendulum_environment.t < end_time :
     position = system_state[::2]
 
     action_arr += [action]
-
+    t+=dt
     state += [position]
 
     reward_arr += [reward_init.reward_1(system_state,action.cpu().numpy())]
 
-    t_array += [double_pendulum_environment.t]
+    #t_array += [double_pendulum_environment.t]
+    t_array += [t]
 
 state = np.array(state)
 t_array = np.array(t_array)
