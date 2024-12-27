@@ -41,7 +41,7 @@ class Args:
     # Algorithm specific arguments
     env_id: str = "rK4-DoublePendulum-v0"
     """the id of the environment"""
-    total_timesteps: int = 500000
+    total_timesteps: int = 300000
     """total timesteps of the experiments"""
     learning_rate: float = 6e-4
     """the learning rate of the optimizer"""
@@ -55,17 +55,17 @@ class Args:
     """the discount factor gamma"""
     gae_lambda: float = 0.95
     """the lambda for the general advantage estimation"""
-    num_minibatches: int = 32
+    num_minibatches: int = 128
     """the number of mini-batches"""
     update_epochs: int = 10
     """the K epochs to update the policy"""
-    norm_adv: bool = True
+    norm_adv: bool = False
     """Toggles advantages normalization"""
     clip_coef: float = 0.2
     """the surrogate clipping coefficient"""
     clip_vloss: bool = True
     """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
-    ent_coef: float = 0.001
+    ent_coef: float = 0.005
     """coefficient of the entropy"""
     vf_coef: float = 0.5
     """coefficient of the value function"""

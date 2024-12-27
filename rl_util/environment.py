@@ -52,6 +52,8 @@ class Rk4Environment:
 
     def step(self,action:np.ndarray):
 
+        action = np.array(action) *10 # scaling action
+
         if(self.t is None or self.system_state is None):
             raise NotImplementedError("Need to run environment reset()")
 

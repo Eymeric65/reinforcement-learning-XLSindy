@@ -14,7 +14,7 @@ import torch
 from rl_util import reward_init
 import os
 
-device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initial parameters
 link1_length = 1.0
@@ -60,7 +60,9 @@ end_time = 100
 
 
 
-model_path = os.path.abspath("runs\\rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1735290987\\ppo_continuous_fixed_rk4_env.cleanrl_model")
+model_path = os.path.abspath(
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1735292912/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    )
 
 # RL environment data generation
 
@@ -92,8 +94,8 @@ while double_pendulum_environment.t < end_time :
     with torch.no_grad():
         action, _, _, _ = agent.get_action_and_value(torch.Tensor(double_pendulum_environment.system_state).to(device))
 
-    system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
-    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step([0,0])
+    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
+    system_state, reward, terminated, truncated, info = double_pendulum_environment.step([10,0])
 
     position = system_state[::2]
 
@@ -112,7 +114,7 @@ reward_arr = np.array(reward_arr)
 
 
 plt.plot(t_array,state[:,0,0],label='theta1_rl')
-plt.plot(t_array,state[:,0,1],label='theta2_rl')
+plt.plot(t_array,state[:,0,2],label='theta2_rl')
 
 plt.legend()
 
