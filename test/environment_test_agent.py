@@ -61,7 +61,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1735292912/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1735295505/ppo_continuous_fixed_rk4_env.cleanrl_model"
     )
 
 # RL environment data generation
