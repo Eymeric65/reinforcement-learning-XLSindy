@@ -9,12 +9,14 @@ package-mode=false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-py-xl-sindy = {path = "../py-xl-sindy", develop = true}
 # py-xl-sindy = "^1.0.1"
 matplotlib = "^3.10.0"
 numpy = "^2.2.1"
-sympy = "^1.13.3"
-pyqt5 = "^5.15.11"
+sympy = "^1.13.1"
+py-xl-sindy = {path = "../py-xl-sindy", develop = true}
+torch = "^2.5.1"
+tyro = "^0.9.5"
+tensorboard = "^2.18.0"
 
 
 [build-system]
