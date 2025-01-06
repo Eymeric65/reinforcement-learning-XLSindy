@@ -22,7 +22,7 @@ link2_length = 1.0
 mass1 = 0.8
 mass2 = 0.8
 initial_conditions = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
-friction_forces = [-1.4, -1.2]
+friction_forces = [-0.5, -0.5]
 
 # max_force_span = [15.8, 4.5]
 # time_period = 1.0
@@ -52,7 +52,7 @@ L = (0.5 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 0.5 * m2 * l2 ** 2 * theta2_d *
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
 # Loop frequency
-frequency = 50
+frequency = 25
 
 dt = 1 / frequency
 
@@ -61,7 +61,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1735295505/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736143562/ppo_continuous_fixed_rk4_env.cleanrl_model"
     )
 
 # RL environment data generation
@@ -74,7 +74,7 @@ double_pendulum_environment = environment.Rk4Environment(
                                                     dt,
                                                     reward_function= reward_init.reward_1,
                                                     fluid_forces=friction_forces,
-                                                    initial_function=reward_init.initial_function_1,
+                                                    initial_function=reward_init.initial_function_v(0.4),
                                                     reset_overtime=False)
 
 agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
@@ -96,8 +96,8 @@ while t < end_time :
     with torch.no_grad():
         action, _, _, _ = agent.get_action_and_value(torch.Tensor(double_pendulum_environment.system_state).to(device))
 
-    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
-    system_state, reward, terminated, truncated, info = double_pendulum_environment.step([10,0])
+    system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
+    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step([10,0])
 
     position = system_state[::2]
 

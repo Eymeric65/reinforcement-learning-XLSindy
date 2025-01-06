@@ -36,9 +36,12 @@ class Rk4Environment:
 
         self.initial_function = initial_function
 
-        self.t = None
+
         self.max_time = max_time
+
         self.system_state = None
+        self.t = None
+        self.total_reward = None
 
 
     #def reset(self,initial_state:np.ndarray):
@@ -47,6 +50,7 @@ class Rk4Environment:
         self.t = 0
         #self.system_state = np.reshape(initial_state, (1,-1)) # enforcing shape 
         self.system_state = self.initial_function()
+        self.total_reward = 0
 
         return self.system_state
 
@@ -57,9 +61,19 @@ class Rk4Environment:
         if(self.t is None or self.system_state is None):
             raise NotImplementedError("Need to run environment reset()")
 
-        info = {} # Not implemented
+        info = {} #init info
 
         if(self.t >= self.max_time and self.reset_overtime):
+            
+            
+            final_info = {
+                'episode':{
+                    'r':self.total_reward,
+                    'l':self.t
+                }
+            }
+
+            info["final_info"] = [final_info]
             self.reset()
             return self.system_state, 0, [0], [1], info
 
@@ -70,7 +84,18 @@ class Rk4Environment:
         
         reward ,terminated =self.reward_function(self.system_state,action)
 
+        self.total_reward += reward
+
         if terminated:
+            
+            final_info = {
+                'episode':{
+                    'r':self.total_reward,
+                    'l':self.t
+                }
+            }
+
+            info["final_info"] = [final_info]
             self.reset()
         
 
