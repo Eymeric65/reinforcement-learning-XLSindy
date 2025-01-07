@@ -22,7 +22,7 @@ link2_length = 1.0
 mass1 = 0.8
 mass2 = 0.8
 initial_conditions = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
-friction_forces = [-1.4, -1.2]
+friction_forces = [-0.4, -0.5]
 
 # max_force_span = [15.8, 4.5]
 # time_period = 1.0
@@ -61,7 +61,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736149345/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736213794/ppo_continuous_fixed_rk4_env.cleanrl_model"
     )
 
 # RL environment data generation
@@ -75,7 +75,8 @@ double_pendulum_environment = environment.Rk4Environment(
                                                     reward_function= reward_init.reward_1,
                                                     fluid_forces=friction_forces,
                                                     initial_function=reward_init.initial_function_v(0.8),
-                                                    reset_overtime=False)
+                                                    reset_overtime=True,
+                                                    max_time=5)
 
 agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
 
