@@ -149,7 +149,7 @@ if __name__ == "__main__":
                                     dt,
                                     reward_function= reward_init.reward_1,
                                     fluid_forces=friction_forces,
-                                    initial_function=reward_init.initial_function_v(0.5))
+                                    initial_function=reward_init.initial_function_v(0.8))
 
     agent = agent.Agent(env).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
