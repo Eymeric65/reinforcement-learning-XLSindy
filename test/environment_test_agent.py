@@ -22,7 +22,7 @@ link2_length = 1.0
 mass1 = 0.8
 mass2 = 0.8
 initial_conditions = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
-friction_forces = [-0.4, -0.5]
+friction_forces = [-1.4, -1.2]
 
 # max_force_span = [15.8, 4.5]
 # time_period = 1.0
@@ -61,22 +61,35 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736213794/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736313108/ppo_continuous_fixed_rk4_env.cleanrl_model"
     )
 
 # RL environment data generation
 
+initial_state = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
+
 double_pendulum_environment = environment.Rk4Environment(
-                                                    symbols_matrix,
-                                                    time_sym,
-                                                    L,
-                                                    substitutions,
-                                                    dt,
-                                                    reward_function= reward_init.reward_1,
-                                                    fluid_forces=friction_forces,
-                                                    initial_function=reward_init.initial_function_v(0.8),
-                                                    reset_overtime=True,
-                                                    max_time=5)
+                                symbols_matrix,
+                                time_sym,
+                                L,
+                                substitutions,
+                                dt,
+                                reward_function= reward_init.reward_swing_up(),
+                                fluid_forces=friction_forces,
+                                initial_function=reward_init.initial_function_f(initial_state),
+                                max_time=100,
+                                mask_action=np.array([[1.0,0.0]]))
+
+# double_pendulum_environment = environment.Rk4Environment(
+#                                 symbols_matrix,
+#                                 time_sym,
+#                                 L,
+#                                 substitutions,
+#                                 dt,
+#                                 reward_function= lambda x,y:(0.0,0.0,[]),
+#                                 fluid_forces=friction_forces,
+#                                 initial_function=reward_init.initial_function_f(initial_state),
+#                                 max_time=12)
 
 agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
 
@@ -98,7 +111,7 @@ while t < end_time :
         action, _, _, _ = agent.get_action_and_value(torch.Tensor(double_pendulum_environment.system_state).to(device))
 
     system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
-    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step([10,0])
+    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.array([[1.0,1.0]]))
 
     position = system_state[::2]
 
@@ -106,7 +119,7 @@ while t < end_time :
     t+=dt
     state += [position]
 
-    reward_arr += [reward_init.reward_1(system_state,action.cpu().numpy())]
+    reward_arr += [reward_init.reward_swing_up()(system_state,action.cpu().numpy())]
 
     #t_array += [double_pendulum_environment.t]
     t_array += [t]
@@ -127,10 +140,11 @@ action_arr = np.array(action_arr)
 plt.figure()
 plt.plot(t_array, reward_arr[:, 0], label='reward')
 plt.plot(t_array, reward_arr[:, 1], label='terminated')
+plt.legend()
 
 plt.figure()
 plt.plot(t_array, action_arr[:,0, 0], label='action1')
-plt.plot(t_array, action_arr[:,0, 1], label='action2')
+#plt.plot(t_array, action_arr[:,0, 1], label='action2')
 
 plt.legend()
 

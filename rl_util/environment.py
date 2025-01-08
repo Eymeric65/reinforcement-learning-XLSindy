@@ -17,10 +17,13 @@ class Rk4Environment:
             fluid_forces: List[int] = [],
             max_time:float = 60,
             initial_function:Callable[[],np.ndarray] = None,
-            reset_overtime:bool = True):
+            reset_overtime:bool = True,
+            mask_action = np.array([[1.0,1.0]])):
         
         if(initial_function is None):
             raise NotImplementedError("Initial function not implemented")
+
+        self.mask_action = mask_action
 
         self.observation_space = BoxArray(shape=(1,symbols_matrix.shape[1]*2))
         self.action_space = BoxArray(shape=(1,symbols_matrix.shape[1]))
@@ -43,6 +46,8 @@ class Rk4Environment:
         self.t = None
         self.total_reward = None
 
+        self.max_action = None
+
 
     #def reset(self,initial_state:np.ndarray):
     def reset(self):
@@ -56,7 +61,7 @@ class Rk4Environment:
 
     def step(self,action:np.ndarray):
 
-        action = np.array(action) *10 # scaling action
+        action = np.array(action) *10 * self.mask_action # scaling action
 
         if(self.t is None or self.system_state is None):
             raise NotImplementedError("Need to run environment reset()")
@@ -82,7 +87,9 @@ class Rk4Environment:
         self.system_state = SS
         self.t = self.t + self.dt
         
-        reward ,terminated =self.reward_function(self.system_state,action)
+        reward ,terminated,reward_info =self.reward_function(self.system_state,action)
+
+        info["reward_info"] = [reward_info]
 
         self.total_reward += reward
 

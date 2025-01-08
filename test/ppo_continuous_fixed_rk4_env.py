@@ -141,15 +141,19 @@ if __name__ == "__main__":
     dt = 1 / frequency
     # End of creation of double pendulum environment
 
+    initial_state = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
+
     env = environment.Rk4Environment(
                                     symbols_matrix,
                                     time_sym,
                                     L,
                                     substitutions,
                                     dt,
-                                    reward_function= reward_init.reward_1,
+                                    reward_function= reward_init.reward_swing_up_s(),
                                     fluid_forces=friction_forces,
-                                    initial_function=reward_init.initial_function_v(0.8))
+                                    initial_function=reward_init.initial_function_f(initial_state),
+                                    max_time=12,
+                                    mask_action=np.array([[1.0,0.0]]))
 
     agent = agent.Agent(env).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
@@ -200,9 +204,14 @@ if __name__ == "__main__":
                 rewards[step] = torch.tensor(reward).to(device).view(-1)
                 next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(next_done).to(device)   
                 # Log the action taken
-                for i, act in enumerate(action.cpu().numpy().flatten()):
-                    writer.add_scalar(f"charts/action_taken_{i}", act, global_step)
-                    writer.add_scalar(f"charts/position_{i}", next_obs[0,i*2], global_step)
+                # for i, act in enumerate(action.cpu().numpy().flatten()):
+                #     writer.add_scalar(f"charts/action_taken_{i}", act, global_step)
+                #     writer.add_scalar(f"charts/position_{i}", next_obs[0,i*2], global_step)
+
+                if "reward_info" in infos:
+                    for info in infos["reward_info"]:
+                        for reward_type, reward_value in info.items():
+                            writer.add_scalar("charts/reward/"+reward_type, reward_value, global_step)
                 
                 if "final_info" in infos:
                     for info in infos["final_info"]:
