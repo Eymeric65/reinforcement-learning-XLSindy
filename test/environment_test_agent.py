@@ -22,8 +22,8 @@ link2_length = 1.0
 mass1 = 0.8
 mass2 = 0.8
 initial_conditions = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
-friction_forces = [-1.4, -1.2]
-
+#friction_forces = [-1.4, -1.2]
+friction_forces = [-0, -0]
 # max_force_span = [15.8, 4.5]
 # time_period = 1.0
 # time_shift = 0.2
@@ -61,7 +61,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736313108/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736323800/ppo_continuous_fixed_rk4_env.cleanrl_model"
     )
 
 # RL environment data generation
@@ -115,7 +115,7 @@ while t < end_time :
 
     position = system_state[::2]
 
-    action_arr += [action]
+    action_arr += [action.cpu().numpy()]
     t+=dt
     state += [position]
 

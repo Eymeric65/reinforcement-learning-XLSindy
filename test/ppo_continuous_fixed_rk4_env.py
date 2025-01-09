@@ -41,7 +41,7 @@ class Args:
     # Algorithm specific arguments
     env_id: str = "rK4-DoublePendulum-v0"
     """the id of the environment"""
-    total_timesteps: int = 800000
+    total_timesteps: int = 2000000
     """total timesteps of the experiments"""
     learning_rate: float = 2e-3
     """the learning rate of the optimizer"""
@@ -74,6 +74,20 @@ class Args:
     target_kl: float = None
     """the target KL divergence threshold"""
 
+    #RK4 specific arguments
+    frequency: int = 25
+    """the frequency of the loop"""
+    reward_function: str ="reward_swing_up_s()"
+    """the reward function to be used"""
+    init_function:str = "initial_function_f(np.array([[0, 0], [0, 0]]))"
+    """the initial function to be used"""
+    mask_action: list[float] = [1.0,0.0]
+    """the mask action to be used"""
+    friction_forces: list[float] = [-1.4, -1.2]
+    """the friction forces to be used"""
+    action_multiplier: float = 10.0
+    """the action multiplier to be used"""
+    
     # to be filled in runtime
     batch_size: int = 0
     """the batch size (computed in runtime)"""
@@ -110,8 +124,9 @@ if __name__ == "__main__":
     link2_length = 1.0
     mass1 = 0.8
     mass2 = 0.8
-    initial_state = np.array([[np.pi, 0], [np.pi, 0]])  # Initial state matrix (k,2)
-    friction_forces = [-1.4, -1.2]
+    #initial_state = np.array([[np.pi, 0], [np.pi, 0]])  # Initial state matrix (k,2)
+    friction_forces = args.friction_forces
+    #friction_forces = [-0.0, -0.0]
 
     # Symbols and symbolic matrix generation
     time_sym = sp.symbols("t")
@@ -134,7 +149,7 @@ if __name__ == "__main__":
         * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
     # Loop frequency
-    frequency = 25
+    frequency = args.frequency
 
     frame_skip=1
 
@@ -143,17 +158,22 @@ if __name__ == "__main__":
 
     initial_state = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
 
+    reward_function = eval(f"reward_init.{args.reward_function}")
+    initial_function = eval(f"reward_init.{args.init_function}")
+    mask_action = np.array([args.mask_action])
+
     env = environment.Rk4Environment(
                                     symbols_matrix,
                                     time_sym,
                                     L,
                                     substitutions,
                                     dt,
-                                    reward_function= reward_init.reward_swing_up_s(),
+                                    reward_function= reward_function,
                                     fluid_forces=friction_forces,
-                                    initial_function=reward_init.initial_function_f(initial_state),
+                                    initial_function=initial_function,
                                     max_time=12,
-                                    mask_action=np.array([[1.0,0.0]]))
+                                    mask_action=mask_action,
+                                    action_multiplier=args.action_multiplier,)
 
     agent = agent.Agent(env).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)

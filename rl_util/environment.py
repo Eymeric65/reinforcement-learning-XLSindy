@@ -18,12 +18,14 @@ class Rk4Environment:
             max_time:float = 60,
             initial_function:Callable[[],np.ndarray] = None,
             reset_overtime:bool = True,
-            mask_action = np.array([[1.0,1.0]])):
+            mask_action = np.array([[1.0,1.0]]),
+            action_multiplier = 1.0):
         
         if(initial_function is None):
             raise NotImplementedError("Initial function not implemented")
 
         self.mask_action = mask_action
+        self.action_multiplier = action_multiplier
 
         self.observation_space = BoxArray(shape=(1,symbols_matrix.shape[1]*2))
         self.action_space = BoxArray(shape=(1,symbols_matrix.shape[1]))
@@ -61,7 +63,7 @@ class Rk4Environment:
 
     def step(self,action:np.ndarray):
 
-        action = np.array(action) *10 * self.mask_action # scaling action
+        action = np.array(action) * self.mask_action # scaling action
 
         if(self.t is None or self.system_state is None):
             raise NotImplementedError("Need to run environment reset()")
@@ -82,7 +84,7 @@ class Rk4Environment:
             self.reset()
             return self.system_state, 0, [0], [1], info
 
-        SS = self._rk4_step(self.dynamics_function(action),self.t,self.system_state,self.dt)
+        SS = self._rk4_step(self.dynamics_function(action*self.action_multiplier),self.t,self.system_state,self.dt)
 
         self.system_state = SS
         self.t = self.t + self.dt

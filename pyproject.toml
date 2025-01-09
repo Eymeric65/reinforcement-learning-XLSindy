@@ -13,10 +13,10 @@ python = "^3.10"
 matplotlib = "^3.10.0"
 numpy = "^2.2.1"
 sympy = "^1.13.1"
-py-xl-sindy = {path = "../py-xl-sindy", develop = true}
 torch = "^2.5.1"
 tyro = "^0.9.5"
 tensorboard = "^2.18.0"
+py-xl-sindy = {path = "../py-xl-sindy", develop = true}
 
 
 [build-system]
