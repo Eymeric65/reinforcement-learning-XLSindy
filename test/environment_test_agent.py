@@ -61,7 +61,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__ppo_continuous_fixed_rk4_env__1__1736323800/ppo_continuous_fixed_rk4_env.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__swing_up_double_action_2__1__1736392806/swing_up_double_action_2.cleanrl_model"
     )
 
 # RL environment data generation
@@ -78,7 +78,8 @@ double_pendulum_environment = environment.Rk4Environment(
                                 fluid_forces=friction_forces,
                                 initial_function=reward_init.initial_function_f(initial_state),
                                 max_time=100,
-                                mask_action=np.array([[1.0,0.0]]))
+                                mask_action=np.array([[1.0,1.0]]),
+                                action_multiplier=5.0)
 
 # double_pendulum_environment = environment.Rk4Environment(
 #                                 symbols_matrix,

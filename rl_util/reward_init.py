@@ -101,7 +101,7 @@ def reward_swing_up(
         energy_reward = energy_reward*5
         upward_reward = upward_reward*30
         #action_penalty = action_penalty*0.005 # base value for double action swing up
-        action_penalty = action_penalty*0.0005
+        action_penalty = action_penalty*0.005
         velocity_penalty = velocity_penalty*0.03 # base value for double action swing up
 
 
@@ -184,7 +184,7 @@ def reward_swing_up_s(
         energy_reward = energy_reward*5
         upward_reward = upward_reward*30
         #action_penalty = action_penalty*0.005 # base value for double action swing up
-        action_penalty = action_penalty*0.0005
+        action_penalty = action_penalty*0.005
         velocity_penalty = velocity_penalty*0.03 # base value for double action swing up
 
 

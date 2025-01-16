@@ -1,2 +1,5 @@
 runs/
 successful_runs/
+exp_log/
+__pycache__/
+*.lock

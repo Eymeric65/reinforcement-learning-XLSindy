@@ -1,0 +1,95 @@
+# Here are the different script launched 
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_single_action_1" \
+--learning-rate 4e-3 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 0 \
+--friction-forces 0 0 \
+--action-multiplier 3 > exp1.txt &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_single_action_2" \
+--learning-rate 4e-3 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 0 \
+--friction-forces -1.0 -1.0 \
+--action-multiplier 13 > exp2.txt &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_1" \
+--learning-rate 4e-3 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp3.txt &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_single_action_3" \
+--learning-rate 2e-3 \
+--num-minibatches 16 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 0 \
+--friction-forces 0 0 \
+--action-multiplier 3 > exp_log/exp4.log &
+
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_2" \
+--learning-rate 3e-3 \
+--num-minibatches 16 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/exp5.log &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_1_2" \
+--learning-rate 6e-3 \
+--num-minibatches 32 \
+--update-epochs 10 \
+--frequency 20 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 >  exp_log/exp6.txt &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_1_3" \
+--learning-rate 4e-3 \
+--num-minibatches 128 \
+--ent-coef 0.005 \
+--update-epochs 10 \
+--frequency 20 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 >  exp_log/exp7.txt &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_2_2" \
+--learning-rate 3e-3 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.003 \
+--frequency 10 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/exp8.log &

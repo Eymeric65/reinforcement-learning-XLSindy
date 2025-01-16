@@ -1,5 +1,6 @@
-
 from dataclasses import dataclass
+from dataclasses import field
+
 import os
 import tyro
 
@@ -18,6 +19,7 @@ from rl_util import environment
 from rl_util import agent
 from rl_util import reward_init
 
+from typing import List
 
 """
 Greatly inspired from clean RL continuous PPO
@@ -77,13 +79,15 @@ class Args:
     #RK4 specific arguments
     frequency: int = 25
     """the frequency of the loop"""
+    frame_skip:int = 1
+    """number of framed skippped"""
     reward_function: str ="reward_swing_up_s()"
     """the reward function to be used"""
     init_function:str = "initial_function_f(np.array([[0, 0], [0, 0]]))"
     """the initial function to be used"""
-    mask_action: list[float] = [1.0,0.0]
+    mask_action: List[float] =  field(default_factory=lambda: [1.0,0.0])
     """the mask action to be used"""
-    friction_forces: list[float] = [-1.4, -1.2]
+    friction_forces: List[float] =  field(default_factory=lambda: [-0.0, -0.0])
     """the friction forces to be used"""
     action_multiplier: float = 10.0
     """the action multiplier to be used"""
@@ -120,10 +124,10 @@ if __name__ == "__main__":
     # Environment setup
 
     # Initial parameters
-    link1_length = 1.0
-    link2_length = 1.0
-    mass1 = 0.8
-    mass2 = 0.8
+    link1_length = 0.5
+    link2_length = 0.5
+    mass1 = 1
+    mass2 = 1
     #initial_state = np.array([[np.pi, 0], [np.pi, 0]])  # Initial state matrix (k,2)
     friction_forces = args.friction_forces
     #friction_forces = [-0.0, -0.0]
@@ -151,7 +155,7 @@ if __name__ == "__main__":
     # Loop frequency
     frequency = args.frequency
 
-    frame_skip=1
+    frame_skip= args.frame_skip
 
     dt = 1 / frequency
     # End of creation of double pendulum environment
