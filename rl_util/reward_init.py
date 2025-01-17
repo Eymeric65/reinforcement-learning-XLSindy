@@ -4,6 +4,8 @@ This file provides reward functions and initial conditions function for multiple
 
 import numpy as np
 
+import jax.numpy as jnp
+
 
 initial_state = np.array([[np.pi, 0], [np.pi, 0]])
 
@@ -205,6 +207,13 @@ def initial_function_f(initial_state): # Used for training the first working age
 
     def init():
         return  np.reshape(initial_state, (1,-1))
+    
+    return  init
+
+def initial_function_f_jax(initial_state): # Used for training the first working agent
+
+    def init():
+        return  jnp.reshape(initial_state, (1,-1))
     
     return  init
 

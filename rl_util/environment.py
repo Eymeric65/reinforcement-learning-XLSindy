@@ -291,9 +291,10 @@ class Rk4Environment_parallel:
     def step(self,action:np.ndarray):
 
         action = np.array(action) * self.mask_action * self.action_multiplier# scaling action
-        
 
-        return SS, reward, [terminated], [0], info
+        self.system_state,reward,terminated,truncated,info,self.t,self.total_reward = self._step(self.system_state,action,self.t,self.total_reward)
+
+        return self.system_state, reward, terminated, truncated, info
 
 
 
