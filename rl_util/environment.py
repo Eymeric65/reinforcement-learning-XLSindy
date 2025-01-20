@@ -41,7 +41,7 @@ class Rk4Environment:
 
         self._acceleration_func,_ = xlsindy.euler_lagrange.generate_acceleration_function(lagrangian_formula,symbols_matrix,time_symbol,substitution_dict=substitution_dict,fluid_forces=fluid_forces)
         # This following function construction assume that the action taken will define the force for the whole timestep (step action function)
-        self.dynamics_function = xlsindy.dynamics_modeling.dynamics_function_RK4_env(self._acceleration_func) 
+        self.dynamics_function = xlsindy.dynamics_modeling.dynamics_function_fixed_external(self._acceleration_func) 
         self.dt = dt
 
         self.reset_overtime = reset_overtime
@@ -122,12 +122,12 @@ class Rk4Environment:
         k4 = func(t + dt, y + dt * k3)
         return np.reshape(y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4), (1,-1)) # enforcing shape 
 
-    def _rk4_step_f(self,func, forces, y, dt):
-        k1 = func(y, forces)
-        k2 = func(y + dt / 2 * k1, forces)
-        k3 = func( y + dt / 2 * k2, forces)
-        k4 = func(y + dt * k3, forces)
-        return np.reshape(y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4), (1,-1)) # enforcing shape 
+    # def _rk4_step_f(self,func, forces, y, dt):
+    #     k1 = func(y, forces)
+    #     k2 = func(y + dt / 2 * k1, forces)
+    #     k3 = func( y + dt / 2 * k2, forces)
+    #     k4 = func(y + dt * k3, forces)
+    #     return np.reshape(y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4), (1,-1)) # enforcing shape 
     
 
 def rk4_step_f(func, forces, y, dt):
@@ -290,7 +290,7 @@ class Rk4Environment_parallel:
 
         self.parallel_envs = parallel_envs
 
-        self.mask_action = jnp.reshape(mask_action,(-1,1))
+        self.mask_action = jnp.reshape(mask_action,(-1))
         self.action_multiplier = action_multiplier
 
         self.observation_space = BoxArray(shape=(symbols_matrix.shape[1]*2,))
@@ -333,8 +333,8 @@ class Rk4Environment_parallel:
 
         step_f = vmap(
                     step_f,
-                    in_axes=(1,1,0,0),
-                    out_axes=(1,0,0,0,0,0,0)
+                    in_axes=(0,0,0,0),
+                    out_axes=(0,0,0,0,0,0,0)
                 )
         
         self._step = jit(step_f)
@@ -357,7 +357,7 @@ class Rk4Environment_parallel:
         self.t = jnp.zeros(self.parallel_envs)
         self.total_reward = jnp.zeros(self.parallel_envs)
 
-        self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]).transpose()
+        self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]) # .transpose()
 
         #print("init system state : ",self.system_state.shape)
         #print("t : ",self.t)

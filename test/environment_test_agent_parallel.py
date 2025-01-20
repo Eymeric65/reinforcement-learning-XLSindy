@@ -17,6 +17,8 @@ import os
 import jax.numpy as jnp
 import jax
 
+import time
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initial parameters
@@ -59,7 +61,7 @@ frequency = 25
 
 dt = 1 / frequency
 
-end_time = 100
+end_time = 200
 
 
 
@@ -71,7 +73,7 @@ model_path = os.path.abspath(
 
 initial_state = np.array([0, 1, 0, 1])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
 
-parallel_env = 8
+parallel_env = 100000
 
 double_pendulum_environment = environment.Rk4Environment_parallel(
                                 symbols_matrix,
@@ -125,38 +127,59 @@ double_pendulum_environment.init()
 
 #exit() # End of script 
 
+start_time_p = time.perf_counter()
+
 while t < end_time :
 
     #print(double_pendulum_environment.system_state,double_pendulum_environment.system_state.shape)
     
     with torch.no_grad():
-        system_state_numpy = np.array(double_pendulum_environment.system_state).transpose()
+        system_state_numpy = np.array(double_pendulum_environment.system_state)
         #print(system_state_numpy)
         action, _, _, _ = agent.get_action_and_value(torch.from_numpy(system_state_numpy).float().to(device))
 
-    system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy().transpose())
+    system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
     #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.array([[1.0,1.0]]))
     #print(system_state.shape)
-    position = system_state[::2]
+    position = system_state #[:,::2] Store all information
 
     action_arr += [action.cpu().numpy()]
     t+=dt
     state += [position]
 
-    reward_arr += [reward_init.reward_swing_up()(system_state,action.cpu().numpy())]
+    reward_arr += [reward]
 
     #t_array += [double_pendulum_environment.t]
     t_array += [t]
 
+
+
+end_time_p = time.perf_counter()
+
+total_time = end_time_p-start_time_p
+
+
 state = np.array(state)
 t_array = np.array(t_array)
+
+print(f"""the computation of a simulation of :
+        {end_time*parallel_env:.2f} s 
+        {end_time*parallel_env/60:.2f} mn 
+        {end_time*parallel_env/60/60:.2f} h 
+        {end_time*parallel_env/60/60/24:.2f} days \n
+        lasted {total_time:.2f} s on a computer using {parallel_env} parallel environments.
+        This is equivalent to {total_time*1000000000/len(t_array)/parallel_env:.2f} ns / timestep""")
+
+
+print(state.shape)
+
 
 reward_arr = np.array(reward_arr)
 
 subject = 0
 
-plt.plot(t_array,state[:,0,0,subject],label='theta1_rl')
-plt.plot(t_array,state[:,0,2,subject],label='theta2_rl')
+plt.plot(t_array,state[:,subject,0],label='theta1_rl')
+plt.plot(t_array,state[:,subject,2],label='theta2_rl')
 
 plt.legend()
 
@@ -169,13 +192,14 @@ plt.legend()
 
 action_arr = np.array(action_arr)
 
+
 plt.figure()
-plt.plot(t_array, action_arr[:,0, 0,subject], label='action1')
-#plt.plot(t_array, action_arr[:,0, 1], label='action2')
+plt.plot(t_array, action_arr[:,subject, 0], label='action1')
+plt.plot(t_array, action_arr[:,subject, 1], label='action2')
 
 plt.legend()
 
-xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,0,:,subject],t_array)
+xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,subject,:],t_array)
 
 plt.show() 
 

@@ -14,6 +14,11 @@ import torch
 from rl_util import reward_init
 import os
 
+import time
+
+
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initial parameters
@@ -106,6 +111,8 @@ reward_arr = []
 
 t=0
 
+start_time_p = time.perf_counter()
+
 while t < end_time :
 
     with torch.no_grad():
@@ -124,6 +131,12 @@ while t < end_time :
 
     #t_array += [double_pendulum_environment.t]
     t_array += [t]
+
+end_time_p = time.perf_counter()
+
+total_time = end_time_p-start_time_p
+
+print(f"the computation of a simulation of {end_time} s lasted {total_time} s which is equivalent to {total_time*1000/len(t_array)} ms / timestep")
 
 state = np.array(state)
 t_array = np.array(t_array)
