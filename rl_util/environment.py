@@ -8,6 +8,7 @@ from .spaces import BoxArray
 import jax.numpy as jnp
 from jax import jit
 from jax import vmap
+from jax import lax
 
 class Rk4Environment:
 
@@ -130,11 +131,12 @@ class Rk4Environment:
     
 
 def rk4_step_f(func, forces, y, dt):
+        
         k1 = func(y, forces)
         k2 = func(y + dt / 2 * k1, forces)
         k3 = func( y + dt / 2 * k2, forces)
         k4 = func(y + dt * k3, forces)
-        return jnp.reshape(y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4), (1,-1)) # enforcing shape 
+        return jnp.reshape(y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4), (-1,)) # enforcing shape 
 
 def step_creator(
         max_time:float,
@@ -158,60 +160,108 @@ def step_creator(
             total_reward:float, # need to be returned
     ):
 
+        #print("debug inside _step : system_reward ",system_state,", action :",action,", t : ",t,", total_reward : ",total_reward)
     
-        def reset():
+        def reset(data):
+            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+
             t = 0
             system_state = initial_function()
             total_reward = 0
+            
             return t,system_state,total_reward
         
-        if(t is None or system_state is None):
-            reset()
+        def truncated_branch(data):
+            system_state, reward, [terminated], [truncated], info, t, total_reward = data
 
-        info = {} #init info
+            truncated = 1
 
-        if(t >= max_time and reset_overtime):
-            
-            
             final_info = {
                 'episode':{
+                    'is_final':True,
                     'r':total_reward,
                     'l':t
                 }
             }
 
             info["final_info"] = [final_info]
-            reset()
-            return system_state, 0, [0], [1], info, t, total_reward
+            reset(data)
+            return system_state, reward, [terminated], [truncated], info, t, total_reward
+        #if(t >= max_time and reset_overtime):
 
-        system_state = integrator_function(dynamics_function(action),t,system_state,dt)
+        def terminated_branch(data):
+            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+            final_info = {
+                'episode':{
+                    'is_final':True,
+                    'r':total_reward,
+                    'l':t
+                }
+            }
+
+            info["final_info"] = [final_info]
+            reset(data)
+
+            return system_state, reward, [terminated], [truncated], info, t, total_reward
+        #if terminated:
+
+        def normal_branch(data):
+
+            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+
+            final_info = { # super quick fix, should be managed more efficiently
+            'episode':{
+                'is_final':False,
+                'r':total_reward,
+                'l':t
+            }
+            }
+
+            info["final_info"] = [final_info]
+
+            return system_state, reward, [terminated], [truncated], info, t, total_reward
+
+        info = {} #init info
+        truncated = 0
+        terminated = 0
+
+        #print("detect anomaly _a : ",system_state)
+
+        system_state = integrator_function(dynamics_function,action,system_state,dt)
         t= t + dt
 
-        reward ,terminated,reward_info =reward_function(system_state,action)
+        #print("detect anomaly _p : ",system_state)
+
+        reward ,terminated,reward_info = reward_function(system_state,action)
 
         info["reward_info"] = [reward_info]
 
         total_reward += reward
 
-        if terminated:
-            
-            final_info = {
-                'episode':{
-                    'r':total_reward,
-                    'l':t
-                }
-            }
+        #print("debug boolean", t >= max_time)
+        #print("debug boolean", reset_overtime)
 
-            info["final_info"] = [final_info]
-            reset()
+        branch_condition = (t >= max_time) & (reset_overtime)
 
-        return system_state, reward, [terminated], [0], info, t, total_reward
+        branch_index =  jnp.where(branch_condition, 0,  # Truncated
+                        jnp.where(terminated, 1,  # Terminated
+                                    2))  # Normal
+
+        data = system_state, reward, [terminated], [truncated], info, t, total_reward
+
+        return lax.switch(branch_index,[truncated_branch, terminated_branch, normal_branch],data)
     
     return _step
 
 class Rk4Environment_parallel:
     """ 
     A modified version of the Rk4Environment class that allows for parallel environments.
+    """
+
+    """
+    Recap of the error that i solved : 
+    -Condition should be exprimed in a less pythonic way (with where, cond, etcc) ie : should be explained in a matrix possible way
+    -Branched stuff should have the exactly same output (even when it output a dictionnary, the dictionnary should be exactly the same )
     """
 
     def __init__(
@@ -238,11 +288,13 @@ class Rk4Environment_parallel:
         if(initial_function is None):
             raise NotImplementedError("Initial function not implemented")
 
-        self.mask_action = mask_action
+        self.parallel_envs = parallel_envs
+
+        self.mask_action = jnp.reshape(mask_action,(-1,1))
         self.action_multiplier = action_multiplier
 
-        self.observation_space = BoxArray(shape=(1,symbols_matrix.shape[1]*2))
-        self.action_space = BoxArray(shape=(1,symbols_matrix.shape[1]))
+        self.observation_space = BoxArray(shape=(symbols_matrix.shape[1]*2,))
+        self.action_space = BoxArray(shape=(symbols_matrix.shape[1],))
 
         self.reward_function = reward_function
 
@@ -265,9 +317,9 @@ class Rk4Environment_parallel:
 
         self.max_time = max_time
 
-        self.system_state = [None for _ in range(parallel_envs)]
-        self.t = [None for _ in range(parallel_envs)]
-        self.total_reward = [None for _ in range(parallel_envs)]
+        self.system_state = None
+        self.t = None
+        self.total_reward = None
 
 
         step_f = step_creator(
@@ -287,14 +339,30 @@ class Rk4Environment_parallel:
         
         self._step = jit(step_f)
 
+        #resetting all environments
 
+        
     def step(self,action:np.ndarray):
 
         action = np.array(action) * self.mask_action * self.action_multiplier# scaling action
 
+        #print("shape of system : ",self.system_state.shape,action.shape,self.t.shape,self.total_reward.shape)
+
         self.system_state,reward,terminated,truncated,info,self.t,self.total_reward = self._step(self.system_state,action,self.t,self.total_reward)
 
         return self.system_state, reward, terminated, truncated, info
+    
+    def init(self): # Need to be only once
+
+        self.t = jnp.zeros(self.parallel_envs)
+        self.total_reward = jnp.zeros(self.parallel_envs)
+
+        self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]).transpose()
+
+        #print("init system state : ",self.system_state.shape)
+        #print("t : ",self.t)
+
+
 
 
 

@@ -203,6 +203,90 @@ def reward_swing_up_s(
     
     return reward
 
+
+def reward_swing_up_s_jax(
+        mass1:float =1 ,
+        mass2:float =1,
+        lenght1:float =1,
+        lenght2:float =1,
+        max_energy:float = 5,
+    ):
+    """
+    Reward function for the swing up problem single acted.
+    This function reward the agent for getting enough energy to swing up the pendulum
+    """
+
+    def reward(state,action):
+
+        #action,state = action[0],state[0] # deprecated changed paradigm in jax mode (shape became more standard (n,) )
+
+        #print("debug stack", state," \n action ", action)
+
+        position = state[::2]
+        velocity = state[1::2]
+
+        reward_info={}
+
+        condition = (position[0] < -2 * jnp.pi) | (position[1] < -2 * jnp.pi) | \
+                    (position[0] > 2 * jnp.pi) | (position[1] > 2 * jnp.pi)
+
+        # Use jnp.where to set terminated based on the condition
+        terminated = jnp.where(condition, 1, 0)
+
+
+        max_potential_energy = lenght1 * mass1 * 9.81 + lenght2 * mass2 * 9.81 
+
+        potential_energy = lenght1 * mass1 * 9.81 * (1 - jnp.cos(position[0])) + lenght2 *mass2 * 9.81 * (1 - jnp.cos(position[1]))
+        kinetic_energy = mass1 *(lenght1 *velocity[0] ** 2)/2 + (lenght2 *velocity[1] ** 2)*mass2/2
+
+        total_energy = potential_energy + kinetic_energy
+
+        # Main issue is dissipation forces...
+        total_energy_ratio = total_energy/(max_potential_energy) # equal to 1 when the pendulum is at the top with energy surplus
+
+        energy_reward = -jnp.abs(total_energy_ratio - max_energy) + max_energy # equal to 1 when the pendulum is at the top and diminishes if the energy get greater (discard infinite speed reward)
+        
+        # test with absoulte value instead of square
+        upward_reward_1 = -  jnp.abs(1-position[0]/np.pi)  + 1 # Shaping function to give reward to reach the upward position =1 when reached
+        upward_reward_2 = -  jnp.abs(1-position[1]/np.pi)  + 1 # Shaping function to give reward to reach the upward position =1 when reached
+    
+        upward_reward = (upward_reward_1*1 + upward_reward_2*4)/5 # reward more the non actuated pendulum
+
+        action_penalty =  -(action[0] ** 2) -  (action[1] ** 2)
+
+        velocity_penalty = - (velocity[0] ** 2) - (velocity[1] ** 2)
+
+        reward_info['goal_state'] = upward_reward # This info is only used to know if agent can succeed the task It should be bounded between 0 and 1 and 1 would signify that the agent is at the top.
+
+        # At this point all the reward are bounded between 0 and 1
+        # we can apply goal priority to the reward
+
+        near_goal_condition = upward_reward > 0.7 # jax formalism for the transformation
+
+        energy_reward = jnp.where(near_goal_condition,energy_reward*0.01,energy_reward)
+        upward_reward = jnp.where(near_goal_condition,upward_reward*2,energy_reward)
+
+        # Apply scaling to the reward now, it helps for reading the info graph
+        energy_reward = energy_reward*5
+        upward_reward = upward_reward*30
+        #action_penalty = action_penalty*0.005 # base value for double action swing up
+        action_penalty = action_penalty*0.005
+        velocity_penalty = velocity_penalty*0.03 # base value for double action swing up
+
+
+        reward_info['energy_reward'] = energy_reward
+        reward_info['upward_reward'] = upward_reward
+        reward_info['action_penalty'] = action_penalty
+        reward_info['velocity_penalty'] = velocity_penalty
+
+        # The goal is to force the agent to maximize the energy while going upward
+        # only action_penalty is unbounded and may induce infinite penalty that could slow down learning...
+        total_reward = energy_reward + upward_reward + action_penalty + velocity_penalty - 1000*terminated 
+
+        return total_reward, terminated ,reward_info
+    
+    return reward
+
 def initial_function_f(initial_state): # Used for training the first working agent
 
     def init():
@@ -213,7 +297,7 @@ def initial_function_f(initial_state): # Used for training the first working age
 def initial_function_f_jax(initial_state): # Used for training the first working agent
 
     def init():
-        return  jnp.reshape(initial_state, (1,-1))
+        return  jnp.reshape(initial_state, (-1,))
     
     return  init
 
