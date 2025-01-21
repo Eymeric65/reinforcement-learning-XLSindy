@@ -259,7 +259,7 @@ def reward_swing_up_s_jax(
         upward_reward_1 = -  jnp.abs(1-position[0]/np.pi)  + 1 # Shaping function to give reward to reach the upward position =1 when reached
         upward_reward_2 = -  jnp.abs(1-position[1]/np.pi)  + 1 # Shaping function to give reward to reach the upward position =1 when reached
     
-        upward_reward = (upward_reward_1*1 + upward_reward_2*4)/5 # reward more the non actuated pendulum
+        upward_reward = (upward_reward_1*1 + upward_reward_2*1.5)/2.5 # reward more the non actuated pendulum
 
         action_penalty =  -(action[0] ** 2) -  (action[1] ** 2)
 

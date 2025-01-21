@@ -66,8 +66,13 @@ end_time = 6
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__par_true_swing_up_double_action_2_2__1__1737443941/par_true_swing_up_double_action_2_2.cleanrl_model"
-    )
+    "runs/rK4-DoublePendulum-v0__par_true_swing_up_double_action_4__1__1737447776/par_true_swing_up_double_action_4.cleanrl_model"
+    ) # semi upward
+
+# model_path = os.path.abspath(
+#     "runs/rK4-DoublePendulum-v0__swing_up_double_action_2_2__1__1737437289/swing_up_double_action_2_2.cleanrl_model"
+#     ) # full upward
+
 
 # RL environment data generation
 
@@ -196,10 +201,10 @@ plt.legend()
 
 
 
-# plt.figure()
-# plt.plot(t_array, reward_arr[:, 0], label='reward')
-# plt.plot(t_array, reward_arr[:, 1], label='terminated')
-# plt.legend()
+plt.figure()
+plt.plot(t_array, reward_arr[:,subject], label='reward')
+
+plt.legend()
 
 action_arr = np.array(action_arr)
 
