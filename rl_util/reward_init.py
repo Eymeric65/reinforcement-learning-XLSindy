@@ -139,6 +139,8 @@ def reward_swing_up_s(
         position = state[::2]
         velocity = state[1::2]
 
+        #print("debug serial",position,velocity)
+
         reward_info={}
 
         terminated = 0
@@ -195,6 +197,11 @@ def reward_swing_up_s(
         reward_info['action_penalty'] = action_penalty
         reward_info['velocity_penalty'] = velocity_penalty
 
+        #Debug parallel work
+
+        reward_info['position'] = position
+        reward_info['velocity'] = velocity
+
         # The goal is to force the agent to maximize the energy while going upward
         # only action_penalty is unbounded and may induce infinite penalty that could slow down learning...
         total_reward = energy_reward + upward_reward + action_penalty + velocity_penalty - 1000*terminated 
@@ -221,6 +228,8 @@ def reward_swing_up_s_jax(
         #action,state = action[0],state[0] # deprecated changed paradigm in jax mode (shape became more standard (n,) )
 
         #print("debug stack", state," \n action ", action)
+
+        
 
         position = state[::2]
         velocity = state[1::2]
@@ -264,7 +273,7 @@ def reward_swing_up_s_jax(
         near_goal_condition = upward_reward > 0.7 # jax formalism for the transformation
 
         energy_reward = jnp.where(near_goal_condition,energy_reward*0.01,energy_reward)
-        upward_reward = jnp.where(near_goal_condition,upward_reward*2,energy_reward)
+        upward_reward = jnp.where(near_goal_condition,upward_reward*2,upward_reward)
 
         # Apply scaling to the reward now, it helps for reading the info graph
         energy_reward = energy_reward*5
@@ -278,6 +287,11 @@ def reward_swing_up_s_jax(
         reward_info['upward_reward'] = upward_reward
         reward_info['action_penalty'] = action_penalty
         reward_info['velocity_penalty'] = velocity_penalty
+
+        #Debug parallel work
+
+        reward_info['position'] = position
+        reward_info['velocity'] = velocity
 
         # The goal is to force the agent to maximize the energy while going upward
         # only action_penalty is unbounded and may induce infinite penalty that could slow down learning...

@@ -61,12 +61,12 @@ frequency = 25
 
 dt = 1 / frequency
 
-end_time = 2
+end_time = 6
 
 
 
 model_path = os.path.abspath(
-    "runs_parallel/rK4-DoublePendulum-v0__par_swing_up_double_action_2__1__1737433911/par_swing_up_double_action_2.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__par_true_swing_up_double_action_2_2__1__1737443941/par_true_swing_up_double_action_2_2.cleanrl_model"
     )
 
 # RL environment data generation
@@ -84,7 +84,7 @@ double_pendulum_environment = environment.Rk4Environment_parallel(
                                 reward_function= reward_init.reward_swing_up_s_jax(),
                                 fluid_forces=friction_forces,
                                 initial_function=reward_init.initial_function_f_jax(initial_state),
-                                max_time=2,
+                                max_time=end_time,
                                 mask_action=np.array([1.0,1.0]),
                                 action_multiplier=5.0,
                                 parallel_envs=parallel_env)

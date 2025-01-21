@@ -150,3 +150,49 @@ nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
 --mask-action 1.0 1.0 \
 --friction-forces -0.0 -0.0 \
 --action-multiplier 5 > exp_log/par_exp100.log &
+
+CUDA_VISIBLE_DEVICES=5 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_double_action_2_2" \
+--learning-rate 3e-3 \
+--num-steps 4096 \
+--num-minibatches 256 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--parallel-envs 10000 \
+--frequency 40 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/par_exp101.log &
+
+CUDA_VISIBLE_DEVICES=5 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_double_action_2_2" \
+--learning-rate 3e-3 \
+--num-steps 4096 \
+--num-minibatches 256 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--parallel-envs 10000 \
+--frequency 40 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/par_exp101.log &
+
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_double_action_2_2" \
+--total-timesteps 10000000000000 \
+--learning-rate 3e-3 \
+--num-steps 512 \
+--num-minibatches 1024 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--parallel-envs 10000 \
+--frequency 30 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/par_exp102.log &

@@ -1,7 +1,8 @@
 """
 This script has been made to check if there is any anomaly between the serialized and parallel environment.
 
-So far 
+So far no anomaly has been detected for the runtime but the reward is totally broken 
+
 """
 
 
@@ -63,7 +64,7 @@ frequency = 25
 
 dt = 1 / frequency
 
-end_time = 2
+end_time = 9
 
 
 
@@ -86,7 +87,7 @@ double_pendulum_environment_par = environment.Rk4Environment_parallel(
                                 reward_function= reward_init.reward_swing_up_s_jax(),
                                 fluid_forces=friction_forces,
                                 initial_function=reward_init.initial_function_f_jax(initial_state),
-                                max_time=4,
+                                max_time=end_time,
                                 mask_action=np.array([1.0,1.0]),
                                 action_multiplier=5.0,
                                 parallel_envs=parallel_env)
@@ -100,7 +101,7 @@ double_pendulum_environment_ser = environment.Rk4Environment(
                                 reward_function= reward_init.reward_swing_up_s(),
                                 fluid_forces=friction_forces,
                                 initial_function=reward_init.initial_function_f(initial_state),
-                                max_time=4,
+                                max_time=end_time,
                                 mask_action=np.array([[1.0,1.0]]),
                                 action_multiplier=5.0)
 
@@ -159,6 +160,20 @@ while t < end_time :
     #print(system_state.shape)
     #[:,::2] Store all information
 
+    """ 
+    What are the same so far :
+    - position
+    - velocity
+    - goal_state
+    - energy_reward
+
+    FUCKKKKKKKKKKK i let an error in the upward_reward conversion 
+    """
+
+    print("debug_serial   :",info_ser["reward_info"][0]["upward_reward"])
+
+    print("debug_parallel :",info_par["reward_info"]["upward_reward"])
+
     t+=dt
 
     state_par += [system_state_par]
@@ -169,7 +184,6 @@ while t < end_time :
 
     #t_array += [double_pendulum_environment_par.t]
     t_array += [t]
-
 
 
 end_time_p = time.perf_counter()
