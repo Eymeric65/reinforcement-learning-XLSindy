@@ -165,11 +165,11 @@ def step_creator(
         def reset(data):
             system_state, reward, [terminated], [truncated], info, t, total_reward = data
 
-            t = 0
+            t = 0.0
             system_state = initial_function()
-            total_reward = 0
+            total_reward = 0.0
             
-            return t,system_state,total_reward
+            return system_state, reward, [terminated], [truncated], info, t, total_reward
         
         def truncated_branch(data):
             system_state, reward, [terminated], [truncated], info, t, total_reward = data
@@ -184,8 +184,10 @@ def step_creator(
                 }
             }
 
-            info["final_info"] = [final_info]
-            reset(data)
+            info["final_info"] = final_info
+
+            system_state, reward, [terminated], [truncated], info, t, total_reward = reset((system_state, reward, [terminated], [truncated], info, t, total_reward))
+            
             return system_state, reward, [terminated], [truncated], info, t, total_reward
         #if(t >= max_time and reset_overtime):
 
@@ -199,8 +201,10 @@ def step_creator(
                 }
             }
 
-            info["final_info"] = [final_info]
-            reset(data)
+            info["final_info"] = final_info
+
+            system_state, reward, [terminated], [truncated], info, t, total_reward = reset((system_state, reward, [terminated], [truncated], info, t, total_reward))
+
 
             return system_state, reward, [terminated], [truncated], info, t, total_reward
         #if terminated:
@@ -217,7 +221,7 @@ def step_creator(
             }
             }
 
-            info["final_info"] = [final_info]
+            info["final_info"] = final_info
 
             return system_state, reward, [terminated], [truncated], info, t, total_reward
 
@@ -234,7 +238,7 @@ def step_creator(
 
         reward ,terminated,reward_info = reward_function(system_state,action)
 
-        info["reward_info"] = [reward_info]
+        info["reward_info"] = reward_info
 
         total_reward += reward
 
@@ -328,7 +332,8 @@ class Rk4Environment_parallel:
             reward_function,
             self.dynamics_function,
             rk4_step_f,
-            reset_overtime
+            reset_overtime = reset_overtime,
+            dt = self.dt
         )
 
         step_f = vmap(
@@ -359,6 +364,7 @@ class Rk4Environment_parallel:
 
         self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]) # .transpose()
 
+        return self.system_state
         #print("init system state : ",self.system_state.shape)
         #print("t : ",self.t)
 

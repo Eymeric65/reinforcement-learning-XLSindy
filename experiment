@@ -93,3 +93,60 @@ nohup python -m test.ppo_continuous_fixed_rk4_env \
 --mask-action 1.0 1.0 \
 --friction-forces -0.0 -0.0 \
 --action-multiplier 5 > exp_log/exp8.log &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "parallel_swing_up_double_action_2_3" \
+--learning-rate 3e-3 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.003 \
+--frequency 10 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/exp9.log &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_swing_up_double_action_2" \
+--learning-rate 3e-3 \
+--num-minibatches 16 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/exp10.log &
+
+## Reproduce past result with parallel env
+
+nohup python -m test.ppo_continuous_fixed_rk4_env \
+--exp-name "swing_up_double_action_2_2" \
+--learning-rate 3e-3 \
+--num-steps 4096 \
+--num-minibatches 16 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--frequency 40 \
+--reward-function "reward_swing_up_s()" \
+--init-function "initial_function_f(np.array([[0, 0], [0, 0]]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/exp100.log &
+
+nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_swing_up_double_action_2_2" \
+--learning-rate 3e-3 \
+--num-steps 4096 \
+--num-minibatches 16 \
+--update-epochs 10 \
+--ent-coef 0.001 \
+--parallel-envs 1 \
+--frequency 40 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 1.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/par_exp100.log &

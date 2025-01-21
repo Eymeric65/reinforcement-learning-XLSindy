@@ -57,7 +57,7 @@ L = (0.5 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 0.5 * m2 * l2 ** 2 * theta2_d *
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
 # Loop frequency
-frequency = 25
+frequency = 40
 
 dt = 1 / frequency
 
@@ -66,7 +66,7 @@ end_time = 100
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__swing_up_double_action_2__1__1736392806/swing_up_double_action_2.cleanrl_model"
+    "runs_parallel/rK4-DoublePendulum-v0__par_swing_up_double_action_2__1__1737436595/par_swing_up_double_action_2.cleanrl_model"
     )
 
 # RL environment data generation

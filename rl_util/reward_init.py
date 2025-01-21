@@ -231,7 +231,7 @@ def reward_swing_up_s_jax(
                     (position[0] > 2 * jnp.pi) | (position[1] > 2 * jnp.pi)
 
         # Use jnp.where to set terminated based on the condition
-        terminated = jnp.where(condition, 1, 0)
+        terminated = condition
 
 
         max_potential_energy = lenght1 * mass1 * 9.81 + lenght2 * mass2 * 9.81 
@@ -290,14 +290,14 @@ def reward_swing_up_s_jax(
 def initial_function_f(initial_state): # Used for training the first working agent
 
     def init():
-        return  np.reshape(initial_state, (1,-1))
+        return  np.reshape(initial_state, (1,-1)).astype('float32')
     
     return  init
 
 def initial_function_f_jax(initial_state): # Used for training the first working agent
 
     def init():
-        return  jnp.reshape(initial_state, (-1,))
+        return  jnp.reshape(initial_state, (-1,)).astype('float32')
     
     return  init
 

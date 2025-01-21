@@ -61,19 +61,19 @@ frequency = 25
 
 dt = 1 / frequency
 
-end_time = 200
+end_time = 2
 
 
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__swing_up_double_action_2__1__1736392806/swing_up_double_action_2.cleanrl_model"
+    "runs_parallel/rK4-DoublePendulum-v0__par_swing_up_double_action_2__1__1737433911/par_swing_up_double_action_2.cleanrl_model"
     )
 
 # RL environment data generation
 
 initial_state = np.array([0, 1, 0, 1])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
 
-parallel_env = 100000
+parallel_env = 2
 
 double_pendulum_environment = environment.Rk4Environment_parallel(
                                 symbols_matrix,
@@ -84,7 +84,7 @@ double_pendulum_environment = environment.Rk4Environment_parallel(
                                 reward_function= reward_init.reward_swing_up_s_jax(),
                                 fluid_forces=friction_forces,
                                 initial_function=reward_init.initial_function_f_jax(initial_state),
-                                max_time=100,
+                                max_time=2,
                                 mask_action=np.array([1.0,1.0]),
                                 action_multiplier=5.0,
                                 parallel_envs=parallel_env)
@@ -139,7 +139,11 @@ while t < end_time :
         action, _, _, _ = agent.get_action_and_value(torch.from_numpy(system_state_numpy).float().to(device))
 
     system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
-    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.array([[1.0,1.0]]))
+    #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.ones((parallel_env,2))*0.5)
+    #print("time   : ",double_pendulum_environment.t)
+    #print("t      : ",t)
+    #print("is terminated : ",terminated , truncated)
+
     #print(system_state.shape)
     position = system_state #[:,::2] Store all information
 
@@ -178,8 +182,15 @@ reward_arr = np.array(reward_arr)
 
 subject = 0
 
+plt.figure()
 plt.plot(t_array,state[:,subject,0],label='theta1_rl')
 plt.plot(t_array,state[:,subject,2],label='theta2_rl')
+
+plt.legend()
+
+plt.figure()
+plt.plot(t_array,state[:,1,0],label='theta1_rl2')
+plt.plot(t_array,state[:,1,2],label='theta2_rl2')
 
 plt.legend()
 
@@ -200,6 +211,7 @@ plt.plot(t_array, action_arr[:,subject, 1], label='action2')
 plt.legend()
 
 xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,subject,:],t_array)
+xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,subject+1,:],t_array)
 
 plt.show() 
 
