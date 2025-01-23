@@ -1,0 +1,110 @@
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+╭─ Parsing error ────────────────────────────────────────────────────────╮
+│ Unrecognized arguments:                                                │
+│ ────────────────────────────────────────────────────────────────────── │
+│ For full helptext, run ppo_continuous_fixed_rk4_env_parallel.py --help │
+╰────────────────────────────────────────────────────────────────────────╯
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+╭─ Parsing error ────────────────────────────────────────────────────────╮
+│ Unrecognized arguments:                                                │
+│ ────────────────────────────────────────────────────────────────────── │
+│ For full helptext, run ppo_continuous_fixed_rk4_env_parallel.py --help │
+╰────────────────────────────────────────────────────────────────────────╯
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `model-path` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+model saved to runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_2_rep__1__1737525000/par_true_swing_up_single_action_2_rep.cleanrl_model
+returning early
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `model-path` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/rl_util/agent.py:61: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(path)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/test/parallel_agent_test_from_ppo.py", line 268, in <module>
+    print("pre prout")      
+  File "/mnt/ssd1/eymeric/py-xl-sindy/xlsindy/render.py", line 72, in animate_double_pendulum
+    x1 = length1 * np.sin(angle_array[:, 0])
+  File "/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/torch/_tensor.py", line 1149, in __array__
+    return self.numpy()
+TypeError: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `model-path` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+usage: ppo_continuous_fixed_rk4_env_parallel.py [-h] [OPTIONS]
+
+╭─ options ──────────────────────────────────────────────────────────────────╮
+│ -h, --help              show this help message and exit                    │
+│ --exp-name STR          the name of this experiment (default:              │
+│                         ppo_continuous_fixed_rk4_env_parallel)             │
+│ --seed INT              seed of the experiment (default: 1)                │
+│ --torch-deterministic, --no-torch-deterministic                            │
+│                         if toggled,                                        │
+│                         `torch.backends.cudnn.deterministic=False`         │
+│                         (default: True)                                    │
+│ --cuda, --no-cuda       if toggled, cuda will be enabled by default        │
+│                         (default: True)                                    │
+│ --save-model, --no-save-model                                              │
+│                         whether to save model into the `runs/{run_name}`   │
+│                         folder (default: True)                             │
+│ --env-id STR            the id of the environment (default:                │
+│                         rK4-DoublePendulum-v0)                             │
+│ --total-timesteps INT   total timesteps of the experiments (default:       │
+│                         2000000)                                           │
+│ --learning-rate FLOAT   the learning rate of the optimizer (default:       │
+│                         0.002)                                             │
+│ --num-steps INT         the number of steps to run in each environment per │
+│                         policy rollout (default: 4096)                     │
+│ --anneal-lr, --no-anneal-lr                                                │
+│                         Toggle learning rate annealing for policy and      │
+│                         value networks (default: True)                     │
+│ --gamma FLOAT           the discount factor gamma (default: 0.99)          │
+│ --gae-lambda FLOAT      the lambda for the general advantage estimation    │
+│                         (default: 0.95)                                    │
+│ --num-minibatches INT   the number of mini-batches (default: 254)          │
+│ --update-epochs INT     the K epochs to update the policy (default: 15)    │
+│ --norm-adv, --no-norm-adv                                                  │
+│                         Toggles advantages normalization (default: True)   │
+│ --clip-coef FLOAT       the surrogate clipping coefficient (default: 0.2)  │
+│ --clip-vloss, --no-clip-vloss                                              │
+│                         Toggles whether or not to use a clipped loss for   │
+│                         the value function, as per the paper. (default:    │
+│                         True)                                              │
+│ --ent-coef FLOAT        coefficient of the entropy (default: 0.01)         │
+│ --vf-coef FLOAT         coefficient of the value function (default: 0.5)   │
+│ --max-grad-norm FLOAT   the maximum norm for the gradient clipping         │
+│                         (default: 0.5)                                     │
+│ --target-kl {None}|FLOAT                                                   │
+│                         the target KL divergence threshold (default: None) │
+│ --parallel-envs INT     the number of parallel rk4 environment (default:   │
+│                         1)                                                 │
+│ --frequency INT         the frequency of the loop (default: 25)            │
+│ --frame-skip INT        number of framed skippped (default: 1)             │
+│ --reward-function STR   the reward function to be used (default:           │
+│                         'reward_swing_up_s()')                             │
+│ --init-function STR     the initial function to be used (default:          │
+│                         'initial_function_f(np.array([[0, 0], [0, 0]]))')  │
+│ --mask-action [FLOAT [FLOAT ...]]                                          │
+│                         the mask action to be used (default: 1.0 0.0)      │
+│ --friction-forces [FLOAT [FLOAT ...]]                                      │
+│                         the friction forces to be used (default: -0.0      │
+│                         -0.0)                                              │
+│ --action-multiplier FLOAT                                                  │
+│                         the action multiplier to be used (default: 10.0)   │
+│ --model-path {None}|STR                                                    │
+│                         the agent to continue to train (default: None)     │
+│ --batch-size INT        the batch size (computed in runtime) (default: 0)  │
+│ --minibatch-size INT    the mini-batch size (computed in runtime)          │
+│                         (default: 0)                                       │
+│ --num-iterations INT    the number of iterations (computed in runtime)     │
+│                         (default: 0)                                       │
+╰────────────────────────────────────────────────────────────────────────────╯

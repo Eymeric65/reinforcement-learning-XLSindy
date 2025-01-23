@@ -1,0 +1,15 @@
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_2" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-3 \
+--num-steps 256 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 50 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--action-multiplier 5 > exp_log/par_exp200.log & # pid 1095033 Other 250.log 1109791

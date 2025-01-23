@@ -9,6 +9,7 @@ import jax.numpy as jnp
 from jax import jit
 from jax import vmap
 from jax import lax
+import jax
 
 class Rk4Environment:
 
@@ -54,6 +55,8 @@ class Rk4Environment:
         self.system_state = None
         self.t = None
         self.total_reward = None
+
+        self.key = 42 # the random key 
 
 
     #def reset(self,initial_state:np.ndarray):
@@ -158,21 +161,22 @@ def step_creator(
             action:jnp.ndarray, 
             t:float, # need to be returned
             total_reward:float, # need to be returned
+            key:int, # the fucking random key
     ):
 
         #print("debug inside _step : system_reward ",system_state,", action :",action,", t : ",t,", total_reward : ",total_reward)
     
         def reset(data):
-            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+            system_state, reward, [terminated], [truncated], info, t, total_reward ,key = data
 
             t = 0.0
-            system_state = initial_function()
+            system_state,key = initial_function(key)
             total_reward = 0.0
             
-            return system_state, reward, [terminated], [truncated], info, t, total_reward
+            return system_state, reward, [terminated], [truncated], info, t, total_reward ,key
         
         def truncated_branch(data):
-            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+            system_state, reward, [terminated], [truncated], info, t, total_reward, key= data
 
             truncated = 1
 
@@ -186,13 +190,13 @@ def step_creator(
 
             info["final_info"] = final_info
 
-            system_state, reward, [terminated], [truncated], info, t, total_reward = reset((system_state, reward, [terminated], [truncated], info, t, total_reward))
+            system_state, reward, [terminated], [truncated], info, t, total_reward, key = reset((system_state, reward, [terminated], [truncated], info, t, total_reward, key))
             
-            return system_state, reward, [terminated], [truncated], info, t, total_reward
+            return system_state, reward, [terminated], [truncated], info, t, total_reward , key
         #if(t >= max_time and reset_overtime):
 
         def terminated_branch(data):
-            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+            system_state, reward, [terminated], [truncated], info, t, total_reward, key = data
             final_info = {
                 'episode':{
                     'is_final':True,
@@ -203,15 +207,15 @@ def step_creator(
 
             info["final_info"] = final_info
 
-            system_state, reward, [terminated], [truncated], info, t, total_reward = reset((system_state, reward, [terminated], [truncated], info, t, total_reward))
+            system_state, reward, [terminated], [truncated], info, t, total_reward, key = reset((system_state, reward, [terminated], [truncated], info, t, total_reward, key))
 
 
-            return system_state, reward, [terminated], [truncated], info, t, total_reward
+            return system_state, reward, [terminated], [truncated], info, t, total_reward, key
         #if terminated:
 
         def normal_branch(data):
 
-            system_state, reward, [terminated], [truncated], info, t, total_reward = data
+            system_state, reward, [terminated], [truncated], info, t, total_reward, key = data
 
             final_info = { # super quick fix, should be managed more efficiently
             'episode':{
@@ -223,7 +227,7 @@ def step_creator(
 
             info["final_info"] = final_info
 
-            return system_state, reward, [terminated], [truncated], info, t, total_reward
+            return system_state, reward, [terminated], [truncated], info, t, total_reward, key
 
         info = {} #init info
         truncated = 0
@@ -251,7 +255,7 @@ def step_creator(
                         jnp.where(terminated, 1,  # Terminated
                                     2))  # Normal
 
-        data = system_state, reward, [terminated], [truncated], info, t, total_reward
+        data = system_state, reward, [terminated], [truncated], info, t, total_reward, key
 
         return lax.switch(branch_index,[truncated_branch, terminated_branch, normal_branch],data)
     
@@ -325,6 +329,8 @@ class Rk4Environment_parallel:
         self.t = None
         self.total_reward = None
 
+        self.key =None # the random fucking key
+
 
         step_f = step_creator(
             max_time,
@@ -338,9 +344,17 @@ class Rk4Environment_parallel:
 
         step_f = vmap(
                     step_f,
-                    in_axes=(0,0,0,0),
-                    out_axes=(0,0,0,0,0,0,0)
+                    in_axes=(0,0,0,0,0),
+                    out_axes=(0,0,0,0,0,0,0,0)
                 )
+        
+        initial_function = vmap(
+            initial_function,
+            in_axes=(0,),
+            out_axes=(0,0)
+        )
+
+        self.initial_function = initial_function
         
         self._step = jit(step_f)
 
@@ -353,7 +367,7 @@ class Rk4Environment_parallel:
 
         #print("shape of system : ",self.system_state.shape,action.shape,self.t.shape,self.total_reward.shape)
 
-        self.system_state,reward,terminated,truncated,info,self.t,self.total_reward = self._step(self.system_state,action,self.t,self.total_reward)
+        self.system_state,reward,terminated,truncated,info,self.t,self.total_reward,self.key = self._step(self.system_state,action,self.t,self.total_reward,self.key)
 
         return self.system_state, reward, terminated, truncated, info
     
@@ -362,7 +376,19 @@ class Rk4Environment_parallel:
         self.t = jnp.zeros(self.parallel_envs)
         self.total_reward = jnp.zeros(self.parallel_envs)
 
-        self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]) # .transpose()
+        key = jax.random.PRNGKey(42)
+
+        print("first key : ",key)
+
+        self.key = jax.random.split(key,num=self.parallel_envs) # can be changed to get other randomness
+
+        print(self.key,self.key[0])
+
+        #self.system_state = jnp.array([self.initial_function() for _ in range(self.parallel_envs)]) # .transpose()
+
+
+        self.system_state,self.key = self.initial_function(self.key)
+
 
         return self.system_state
         #print("init system state : ",self.system_state.shape)

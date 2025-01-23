@@ -93,6 +93,8 @@ class Args:
     """the friction forces to be used"""
     action_multiplier: float = 10.0
     """the action multiplier to be used"""
+    model_path:str = None
+    """the agent to continue to train"""
     
     # to be filled in runtime
     batch_size: int = 0
@@ -162,8 +164,6 @@ if __name__ == "__main__":
     dt = 1 / frequency
     # End of creation of double pendulum environment
 
-    initial_state = np.array([0, 0, 0, 0])  # Initial state matrix (k,2)
-
     reward_function = eval(f"reward_init.{args.reward_function}")
     initial_function = eval(f"reward_init.{args.init_function}")
     mask_action = np.array([args.mask_action])
@@ -180,12 +180,12 @@ if __name__ == "__main__":
                                     reward_function= reward_function,
                                     fluid_forces=friction_forces,
                                     initial_function=initial_function,
-                                    max_time=6,
+                                    max_time=4,
                                     mask_action=mask_action,
                                     action_multiplier=args.action_multiplier,
                                     parallel_envs=parallel_env)
 
-    agent = agent.Agent(env).to(device)
+    agent = agent.Agent(env,model_path=args.model_path).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
 
     # ALGO Logic: Storage setup
@@ -257,9 +257,15 @@ if __name__ == "__main__":
 
                 #             for r in np.array(reward_value):
                 #                 writer.add_scalar("charts/reward/"+reward_type, r, global_step)
-                writer.add_scalar("charts/reward/goal_state", np.mean(np.array(infos["reward_info"]["goal_state"])), global_step)
+                
 
                 if infos["final_info"]["episode"]["is_final"].sum()>0:
+
+                    #writer.add_scalar("charts/reward/goal_state", np.mean(np.array(infos["reward_info"]["goal_state"])), global_step)
+
+                    writer.add_scalar("charts/episodic_goal_state", np.mean(
+                        np.array(infos["reward_info"]["goal_state"][infos["final_info"]["episode"]["is_final"]]
+                                 )), global_step)
 
                     writer.add_scalar("charts/episodic_return", np.mean(
                         np.array(infos["final_info"]["episode"]["r"][infos["final_info"]["episode"]["is_final"]]
@@ -313,6 +319,7 @@ if __name__ == "__main__":
 
             # Optimizing the policy and value network
             b_inds = np.arange(args.batch_size)
+            
             clipfracs = []
             for epoch in range(args.update_epochs):
                 np.random.shuffle(b_inds)

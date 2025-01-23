@@ -22,13 +22,13 @@ import time
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initial parameters
-link1_length = 1.0
-link2_length = 1.0
-mass1 = 0.8
-mass2 = 0.8
-initial_conditions = np.array([[0, 0], [0, 0]])  # Initial state matrix (k,2)
+link1_length = 0.5
+link2_length = 0.5
+mass1 = 1
+mass2 = 1
+initial_conditions = np.array([0, 0, 0, 0])  # Initial state matrix (k,2)
 #friction_forces = [-1.4, -1.2]
-friction_forces = [-0, -0]
+friction_forces = [-0.0, -0.0]
 # max_force_span = [15.8, 4.5]
 # time_period = 1.0
 # time_shift = 0.2
@@ -57,28 +57,26 @@ L = (0.5 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 0.5 * m2 * l2 ** 2 * theta2_d *
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
 # Loop frequency
-frequency = 25
+frequency = 200
 
 dt = 1 / frequency
 
-end_time = 6
+end_time = 40
 
-
+# model_path = os.path.abspath( # impressive as fuck
+#     "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_2_rep__1__1737525517/par_true_swing_up_single_action_2_rep.cleanrl_model"
+#     )
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__par_true_swing_up_double_action_4__1__1737447776/par_true_swing_up_double_action_4.cleanrl_model"
-    ) # semi upward
+    "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_4__1__1737617007/par_true_swing_up_single_action_4.cleanrl_model"
+    )
 
-# model_path = os.path.abspath(
-#     "runs/rK4-DoublePendulum-v0__swing_up_double_action_2_2__1__1737437289/swing_up_double_action_2_2.cleanrl_model"
-#     ) # full upward
+initial_state = np.array([0, 0, 0, 0])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
 
-
-# RL environment data generation
-
-initial_state = np.array([0, 1, 0, 1])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
-
+#parallel_env = 2
 parallel_env = 2
+
+key = jax.random.PRNGKey(42)
 
 double_pendulum_environment = environment.Rk4Environment_parallel(
                                 symbols_matrix,
@@ -88,9 +86,9 @@ double_pendulum_environment = environment.Rk4Environment_parallel(
                                 dt,
                                 reward_function= reward_init.reward_swing_up_s_jax(),
                                 fluid_forces=friction_forces,
-                                initial_function=reward_init.initial_function_f_jax(initial_state),
-                                max_time=end_time,
-                                mask_action=np.array([1.0,1.0]),
+                                initial_function=reward_init.initial_function_random_jax(np.array([np.pi, 0, np.pi, 0])),
+                                max_time=4,
+                                mask_action=np.array([1.0,0.0]),
                                 action_multiplier=5.0,
                                 parallel_envs=parallel_env)
 
@@ -141,7 +139,7 @@ while t < end_time :
     with torch.no_grad():
         system_state_numpy = np.array(double_pendulum_environment.system_state)
         #print(system_state_numpy)
-        action, _, _, _ = agent.get_action_and_value(torch.from_numpy(system_state_numpy).float().to(device))
+        action, _, _, _ = agent.get_action_and_value(torch.from_numpy(system_state_numpy).to(device))
 
     system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
     #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.ones((parallel_env,2))*0.5)
@@ -193,11 +191,11 @@ plt.plot(t_array,state[:,subject,2],label='theta2_rl')
 
 plt.legend()
 
-plt.figure()
-plt.plot(t_array,state[:,1,0],label='theta1_rl2')
-plt.plot(t_array,state[:,1,2],label='theta2_rl2')
+# plt.figure()
+# plt.plot(t_array,state[:,1,0],label='theta1_rl2')
+# plt.plot(t_array,state[:,1,2],label='theta2_rl2')
 
-plt.legend()
+# plt.legend()
 
 
 
@@ -211,14 +209,12 @@ action_arr = np.array(action_arr)
 
 plt.figure()
 plt.plot(t_array, action_arr[:,subject, 0], label='action1')
-plt.plot(t_array, action_arr[:,subject, 1], label='action2')
+#plt.plot(t_array, action_arr[:,subject, 1], label='action2')
 
 plt.legend()
 
-xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,subject,:],t_array)
-xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[:,subject+1,:],t_array)
+xlsindy.render.animate_double_pendulum(link1_length,link2_length,state[::10,subject,:],t_array[::10])
 
-plt.show() 
 
 
 
