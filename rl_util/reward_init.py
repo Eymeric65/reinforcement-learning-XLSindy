@@ -220,6 +220,9 @@ def reward_swing_up_s_jax(
         lenght1:float =1,
         lenght2:float =1,
         max_energy:float = 5,
+        up_coeff:float = 30.,
+        action_coeff:float = 0.005,
+        term_coeff:float = 10000,
     ):
     """
     Reward function for the swing up problem single acted.
@@ -280,9 +283,9 @@ def reward_swing_up_s_jax(
 
         # Apply scaling to the reward now, it helps for reading the info graph
         energy_reward = energy_reward*5
-        upward_reward = upward_reward*30
+        upward_reward = upward_reward*up_coeff
         #action_penalty = action_penalty*0.005 # base value for double action swing up
-        action_penalty = action_penalty*0.005
+        action_penalty = action_penalty*action_coeff
         velocity_penalty = velocity_penalty*0.03 # base value for double action swing up
 
 
@@ -298,7 +301,7 @@ def reward_swing_up_s_jax(
 
         # The goal is to force the agent to maximize the energy while going upward
         # only action_penalty is unbounded and may induce infinite penalty that could slow down learning...
-        total_reward = energy_reward + upward_reward + action_penalty + velocity_penalty - 1000*terminated 
+        total_reward = energy_reward + upward_reward + action_penalty + velocity_penalty - term_coeff*terminated 
 
         return total_reward, terminated ,reward_info
     
@@ -449,7 +452,7 @@ def initial_function_random_jax(bound): # Used for training the first working ag
     def init(key):
         
         key, subkey = jax.random.split(key)
-        return  (jax.random.uniform(subkey,shape=bound.shape)*2-1)*jnp.reshape(bound, (-1,)).astype('float32'),key
+        return  (jax.random.uniform(subkey,shape=bound.shape))*jnp.reshape(bound, (-1,)).astype('float32'),key # C etait une connerie de normaliser mdr
     
     return  init
 

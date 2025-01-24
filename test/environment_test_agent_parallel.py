@@ -57,28 +57,29 @@ L = (0.5 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 0.5 * m2 * l2 ** 2 * theta2_d *
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(theta2))
 
 # Loop frequency
-frequency = 200
+frequency = 100
+frame_skip = 10
 
 dt = 1 / frequency
 
-end_time = 40
+end_time = 10
 
 # model_path = os.path.abspath( # impressive as fuck
-#     "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_2_rep__1__1737525517/par_true_swing_up_single_action_2_rep.cleanrl_model"
+#     "runs.old/rK4-DoublePendulum-v0__par_true_swing_up_single_action_2_rep__1__1737525517/par_true_swing_up_single_action_2_rep.cleanrl_model"
 #     )
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_4__1__1737617007/par_true_swing_up_single_action_4.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_34274__1__1737699249/par_true_swing_up_single_action_34274.cleanrl_model"
     )
 
 initial_state = np.array([0, 0, 0, 0])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
 
 #parallel_env = 2
-parallel_env = 2
+parallel_env = 200
 
 key = jax.random.PRNGKey(42)
 
-double_pendulum_environment = environment.Rk4Environment_parallel(
+double_pendulum_environment = environment.Rk4EnvironmentParallel(
                                 symbols_matrix,
                                 time_sym,
                                 L,
@@ -86,8 +87,8 @@ double_pendulum_environment = environment.Rk4Environment_parallel(
                                 dt,
                                 reward_function= reward_init.reward_swing_up_s_jax(),
                                 fluid_forces=friction_forces,
-                                initial_function=reward_init.initial_function_random_jax(np.array([np.pi, 0, np.pi, 0])),
-                                max_time=4,
+                                initial_function=reward_init.initial_function_f_jax(np.array([0, 0, 0, 0])),
+                                max_time=end_time,
                                 mask_action=np.array([1.0,0.0]),
                                 action_multiplier=5.0,
                                 parallel_envs=parallel_env)
@@ -103,8 +104,8 @@ double_pendulum_environment = environment.Rk4Environment_parallel(
 #                                 initial_function=reward_init.initial_function_f(initial_state),
 #                                 max_time=12)
 
-agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
-
+#agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
+agent = agent.Agent(double_pendulum_environment).to(device)
 state = []
 
 action_arr = []
@@ -141,7 +142,8 @@ while t < end_time :
         #print(system_state_numpy)
         action, _, _, _ = agent.get_action_and_value(torch.from_numpy(system_state_numpy).to(device))
 
-    system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
+    for i in range(frame_skip): 
+        system_state, reward, terminated, truncated, info = double_pendulum_environment.step(action.cpu().numpy())
     #system_state, reward, terminated, truncated, info = double_pendulum_environment.step(np.ones((parallel_env,2))*0.5)
     #print("time   : ",double_pendulum_environment.t)
     #print("t      : ",t)
@@ -186,10 +188,16 @@ reward_arr = np.array(reward_arr)
 subject = 0
 
 plt.figure()
-plt.plot(t_array,state[:,subject,0],label='theta1_rl')
-plt.plot(t_array,state[:,subject,2],label='theta2_rl')
+
+for i in range(parallel_env):
+    plt.plot(t_array,state[:,i,0],label=f'theta1_rl_{i}')
 
 plt.legend()
+
+plt.figure()
+
+for i in range(parallel_env):
+    plt.plot(t_array,state[:,i,2],label=f'theta2_rl_{i}')
 
 # plt.figure()
 # plt.plot(t_array,state[:,1,0],label='theta1_rl2')
@@ -200,7 +208,8 @@ plt.legend()
 
 
 plt.figure()
-plt.plot(t_array, reward_arr[:,subject], label='reward')
+for i in range(parallel_env):
+    plt.plot(t_array, reward_arr[:,i], label=f'reward_{i}')
 
 plt.legend()
 

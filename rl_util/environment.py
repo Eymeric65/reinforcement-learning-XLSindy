@@ -261,7 +261,68 @@ def step_creator(
     
     return _step
 
-class Rk4Environment_parallel:
+class SlidingMeanStandard:
+    """
+    Class in order to create a sliding average and standard average of some value.
+    Practically this class will concern reward and observation
+    """
+
+    def __init__(
+            self,
+            batch_axis:int = None,
+            moving_proportion:float = None,
+            shape:tuple= None, # unused determined on the first update
+            epsilon:float = 10e-8
+    ):
+        self.shape = shape
+        self.moving_proportion = moving_proportion
+        self.batch_axis = batch_axis
+        self.epsilon = epsilon
+
+        self.global_n=0
+
+        self.mean = None
+        self.var = None
+
+    def update(self,batch):
+        """
+        Update the sliding mean and var over a new batch
+        """
+        if (self.batch_axis is not None):
+            batch_size = batch.shape[self.batch_axis]
+        else : 
+            batch_size=np.prod(batch.shape)
+
+        self.global_n += batch_size
+
+        if(self.global_n == batch_size ):
+            self.mean = np.mean(batch,axis = self.batch_axis)
+            self.var = np.var(batch,axis = self.batch_axis)
+        else :
+            batch_mean = np.mean(batch,axis = self.batch_axis)
+            batch_var = np.var(batch,axis = self.batch_axis)
+
+            proportion = batch_size/self.global_n
+
+            if(self.moving_proportion is not None and (proportion < self.moving_proportion)):
+                proportion = self.moving_proportion
+
+            diff_mean = batch_mean - self.mean
+
+            self.mean = self.mean + diff_mean*proportion 
+
+            self.var = self.var*(1-proportion) + batch_var*proportion + diff_mean**2 *proportion*(1-proportion)
+        
+        # Increment the global step
+
+        return (batch - self.mean)/(self.var**0.5 + self.epsilon)
+
+    def normalise(self,batch):
+
+        return (batch - self.mean)/(self.var**0.5 + self.epsilon)
+
+
+class Rk4EnvironmentParallel:
     """ 
     A modified version of the Rk4Environment class that allows for parallel environments.
     """
@@ -287,6 +348,8 @@ class Rk4Environment_parallel:
             mask_action = np.array([[1.0,1.0]]),
             action_multiplier = 1.0,
             parallel_envs = 1,
+            normalised_obs_reward = False,
+            moving_proportion= 0.01
             ):
         """
         Initialize the environment with a plethora of parameters. Much attention should be directed to the initial and reward function that should be jax compatible.
@@ -331,6 +394,19 @@ class Rk4Environment_parallel:
 
         self.key =None # the random fucking key
 
+        self.normalised_obs_reward = normalised_obs_reward
+
+        # Normalisation
+        self.RewardSlidingMeanStd = SlidingMeanStandard(
+            batch_axis=None, # test change here 20250124
+            moving_proportion=moving_proportion,
+        )
+
+        self.ObservationSlidingMeanStd = SlidingMeanStandard(
+            batch_axis=None, # test change here 20250124
+            moving_proportion=moving_proportion,
+        )
+
 
         step_f = step_creator(
             max_time,
@@ -369,6 +445,10 @@ class Rk4Environment_parallel:
 
         self.system_state,reward,terminated,truncated,info,self.t,self.total_reward,self.key = self._step(self.system_state,action,self.t,self.total_reward,self.key)
 
+        if self.normalised_obs_reward:
+            self.system_state = self.ObservationSlidingMeanStd.update(self.system_state)   
+            reward = self.RewardSlidingMeanStd.update(reward)*10       # Test scaling here 20250124
+
         return self.system_state, reward, terminated, truncated, info
     
     def init(self): # Need to be only once
@@ -388,6 +468,9 @@ class Rk4Environment_parallel:
 
 
         self.system_state,self.key = self.initial_function(self.key)
+
+        if self.normalised_obs_reward:
+            self.system_state = self.ObservationSlidingMeanStd.update(self.system_state)
 
 
         return self.system_state

@@ -45,7 +45,7 @@ class Args:
     """the id of the environment"""
     total_timesteps: int = 2000000
     """total timesteps of the experiments"""
-    learning_rate: float = 2e-3
+    learning_rate: float = 3e-4
     """the learning rate of the optimizer"""
     #num_envs: int = 1
     #"""the number of parallel game environments"""
@@ -59,7 +59,7 @@ class Args:
     """the lambda for the general advantage estimation"""
     num_minibatches: int = 254
     """the number of mini-batches"""
-    update_epochs: int = 15
+    update_epochs: int = 10
     """the K epochs to update the policy"""
     norm_adv: bool = True
     """Toggles advantages normalization"""
@@ -67,7 +67,7 @@ class Args:
     """the surrogate clipping coefficient"""
     clip_vloss: bool = True
     """Toggles whether or not to use a clipped loss for the value function, as per the paper."""
-    ent_coef: float = 0.01
+    ent_coef: float = 0.0
     """coefficient of the entropy"""
     vf_coef: float = 0.5
     """coefficient of the value function"""
@@ -81,7 +81,7 @@ class Args:
     #RK4 specific arguments
     frequency: int = 25
     """the frequency of the loop"""
-    frame_skip:int = 1
+    frame_skip:int = 0
     """number of framed skippped"""
     reward_function: str ="reward_swing_up_s()"
     """the reward function to be used"""
@@ -95,6 +95,10 @@ class Args:
     """the action multiplier to be used"""
     model_path:str = None
     """the agent to continue to train"""
+    normalised_obs_reward:bool = False
+    """if toggled normalise observation and reward"""
+    moving_proportion: float = 0.01
+    """the normalisation factor"""
     
     # to be filled in runtime
     batch_size: int = 0
@@ -171,7 +175,7 @@ if __name__ == "__main__":
     #parallel_env = 10000
     parallel_env = args.parallel_envs
 
-    env = environment.Rk4Environment_parallel(
+    env = environment.Rk4EnvironmentParallel(
                                     symbols_matrix,
                                     time_sym,
                                     L,
@@ -183,7 +187,9 @@ if __name__ == "__main__":
                                     max_time=4,
                                     mask_action=mask_action,
                                     action_multiplier=args.action_multiplier,
-                                    parallel_envs=parallel_env)
+                                    parallel_envs=parallel_env,
+                                    normalised_obs_reward=args.normalised_obs_reward,
+                                    moving_proportion=args.moving_proportion)
 
     agent = agent.Agent(env,model_path=args.model_path).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
@@ -231,8 +237,11 @@ if __name__ == "__main__":
 
 
                 # TRY NOT TO MODIFY: execute the game and log data.
+                next_obs, reward, terminations, truncations, infos = env.step(action.cpu().numpy())
                 for i in range(frame_skip):
-                    next_obs, reward, terminations, truncations, infos = env.step(action.cpu().numpy())
+                    next_obs, reward, terminations_2, truncations_2, infos = env.step(action.cpu().numpy())
+                    terminations = np.logical_or(terminations, terminations_2)
+                    truncations = np.logical_or(truncations, truncations_2)
 
                 ## Add this due to jax issue
                 reward = np.array(reward)
@@ -378,6 +387,9 @@ if __name__ == "__main__":
             explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
             # TRY NOT TO MODIFY: record rewards for plotting purposes
+            writer.add_scalar("charts/action_mean", action.mean(), global_step)
+            writer.add_scalar("charts/action_std", action.std(), global_step)
+
             writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
             writer.add_scalar("losses/value_loss", v_loss.item(), global_step)
             writer.add_scalar("losses/policy_loss", pg_loss.item(), global_step)

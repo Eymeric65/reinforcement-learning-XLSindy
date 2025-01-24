@@ -108,3 +108,55 @@ usage: ppo_continuous_fixed_rk4_env_parallel.py [-h] [OPTIONS]
 │ --num-iterations INT    the number of iterations (computed in runtime)     │
 │                         (default: 0)                                       │
 ╰────────────────────────────────────────────────────────────────────────────╯
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `model-path` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+jax.errors.SimplifiedTraceback: For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/test/ppo_continuous_fixed_rk4_env_parallel.py", line 209, in <module>
+    next_obs = np.array(env.init())
+  File "/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/rl_util/environment.py", line 468, in init
+    self.system_state,self.key = self.initial_function(self.key)
+TypeError: initial_function_f.<locals>.init() takes 0 positional arguments but 1 was given
+first key :  [ 0 42]
+[[3844734544  474164412]
+ [ 164971080 3849367256]
+ [2772019366 1623321368]
+ ...
+ [3292159674 1664309645]
+ [2777089761  773941914]
+ [3765825281 3990034965]] [3844734544  474164412]
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/mnt/ssd1/eymeric/.cache/pypoetry/virtualenvs/reinforcement-learning-xlsindy-XVX3Or4z-py3.10/lib/python3.10/site-packages/tyro/_parsers.py:339: UserWarning: The field `model-path` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+jax.errors.SimplifiedTraceback: For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/test/ppo_continuous_fixed_rk4_env_parallel.py", line 209, in <module>
+    next_obs = np.array(env.init())
+  File "/mnt/ssd1/eymeric/reinforcement-learning-XLSindy/rl_util/environment.py", line 468, in init
+    self.system_state,self.key = self.initial_function(self.key)
+TypeError: initial_function_f.<locals>.init() takes 0 positional arguments but 1 was given
+first key :  [ 0 42]
+[[3844734544  474164412]
+ [ 164971080 3849367256]
+ [2772019366 1623321368]
+ ...
+ [3292159674 1664309645]
+ [2777089761  773941914]
+ [3765825281 3990034965]] [3844734544  474164412]
