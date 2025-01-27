@@ -1249,3 +1249,140 @@ XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.
 --friction-forces -0.0 -0.0 \
 --normalised-obs-reward \
 --action-multiplier 8 > exp_log/par_exp87739.log & # pid 2111230
+
+# the one that work with normalisation, did I break something ?? Definetly broke something lol LOL it was not breaking it was nuking but all the afternoon
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_83439" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-3 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax()" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 > exp_log/par_exp83439.log & # pid 2113591
+
+#little patch lol
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_45653" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-3 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 > exp_log/par_exp45653.log & # pid 2119391
+
+# reduce learning 
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_76653" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-4 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 > exp_log/par_exp76653.log & # pid 2125081
+
+# reduce learning + no cleanup of variance
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_76093" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-4 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 \
+--moving-proportion -1 > exp_log/par_exp76093.log & #  pid 2128454
+
+# reduce learning + no cleanup of variance + learn madness
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_76783" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-2 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 10000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 \
+--moving-proportion -1 > exp_log/par_exp76783.log & #  pid 2131133
+
+#the one that work with normalisation and big window
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_734283" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-3 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 20000 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 \
+--moving-proportion 1e-3 > exp_log/par_exp734283.log & # pid 2161799
+
+#seems to work 
+XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=7 nohup python -m test.ppo_continuous_fixed_rk4_env_parallel \
+--exp-name "par_true_swing_up_single_action_124283" \
+--total-timesteps 10000000000000 \
+--learning-rate 1e-3 \
+--num-steps 64 \
+--num-minibatches 128 \
+--update-epochs 10 \
+--ent-coef 0.01 \
+--parallel-envs 200 \
+--frequency 100 \
+--frame-skip 10 \
+--reward-function "reward_swing_up_s_jax(term_coeff=30)" \
+--init-function "initial_function_f_jax(np.array([0, 0, 0, 0]))" \
+--mask-action 1.0 0.0 \
+--friction-forces -0.0 -0.0 \
+--normalised-obs-reward \
+--action-multiplier 8 \
+--moving-proportion 1e-3 > exp_log/par_exp124283.log & # pid 2166680

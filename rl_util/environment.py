@@ -403,7 +403,7 @@ class Rk4EnvironmentParallel:
         )
 
         self.ObservationSlidingMeanStd = SlidingMeanStandard(
-            batch_axis=None, # test change here 20250124
+            batch_axis=0, # test change here 20250124
             moving_proportion=moving_proportion,
         )
 
@@ -446,10 +446,12 @@ class Rk4EnvironmentParallel:
         self.system_state,reward,terminated,truncated,info,self.t,self.total_reward,self.key = self._step(self.system_state,action,self.t,self.total_reward,self.key)
 
         if self.normalised_obs_reward:
-            self.system_state = self.ObservationSlidingMeanStd.update(self.system_state)   
+            return_system_state = self.ObservationSlidingMeanStd.update(self.system_state)   
             reward = self.RewardSlidingMeanStd.update(reward)*10       # Test scaling here 20250124
-
-        return self.system_state, reward, terminated, truncated, info
+        else:
+            return_system_state = self.system_state
+            
+        return return_system_state, reward, terminated, truncated, info
     
     def init(self): # Need to be only once
 
@@ -470,10 +472,11 @@ class Rk4EnvironmentParallel:
         self.system_state,self.key = self.initial_function(self.key)
 
         if self.normalised_obs_reward:
-            self.system_state = self.ObservationSlidingMeanStd.update(self.system_state)
+            return_system_state = self.ObservationSlidingMeanStd.update(self.system_state)
+        else:
+            return_system_state = self.system_state
 
-
-        return self.system_state
+        return return_system_state
         #print("init system state : ",self.system_state.shape)
         #print("t : ",self.t)
 

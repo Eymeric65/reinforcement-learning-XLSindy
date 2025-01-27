@@ -2,7 +2,7 @@ import numpy as np
 from rl_util.environment import SlidingMeanStandard
 
 
-data_shape = (10,4)
+data_shape = (1,4)
 batch_axis = None
 
 data_mean = 3
@@ -12,7 +12,7 @@ iteration = 1000
 
 DataSlidingMeanStd = SlidingMeanStandard(
     batch_axis=batch_axis,
-    moving_proportion=0.1
+    moving_proportion=-1
 )
 
 def DebugSliding(batch,total):
@@ -49,3 +49,5 @@ for i in range(iteration):
     sample_normalised = DataSlidingMeanStd.normalise(sample)
 
     print("normalised sample :",np.mean( sample_normalised,axis=batch_axis),np.var( sample_normalised,axis=batch_axis)**0.5)
+
+    print("normalised batch :",DataSlidingMeanStd.normalise(batch))

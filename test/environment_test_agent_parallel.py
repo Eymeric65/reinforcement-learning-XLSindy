@@ -58,18 +58,18 @@ L = (0.5 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 0.5 * m2 * l2 ** 2 * theta2_d *
 
 # Loop frequency
 frequency = 100
-frame_skip = 10
+frame_skip = 1
 
 dt = 1 / frequency
 
-end_time = 10
+end_time = 100
 
 # model_path = os.path.abspath( # impressive as fuck
 #     "runs.old/rK4-DoublePendulum-v0__par_true_swing_up_single_action_2_rep__1__1737525517/par_true_swing_up_single_action_2_rep.cleanrl_model"
 #     )
 
 model_path = os.path.abspath(
-    "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_34274__1__1737699249/par_true_swing_up_single_action_34274.cleanrl_model"
+    "runs/rK4-DoublePendulum-v0__par_true_swing_up_single_action_68939__1__1737710170/par_true_swing_up_single_action_68939.cleanrl_model"
     )
 
 initial_state = np.array([0, 0, 0, 0])  # Initial state matrix (q0 ,q_d0 ,q1 ,q_d1)
@@ -90,8 +90,10 @@ double_pendulum_environment = environment.Rk4EnvironmentParallel(
                                 initial_function=reward_init.initial_function_f_jax(np.array([0, 0, 0, 0])),
                                 max_time=end_time,
                                 mask_action=np.array([1.0,0.0]),
-                                action_multiplier=5.0,
-                                parallel_envs=parallel_env)
+                                action_multiplier=8.0,
+                                parallel_envs=parallel_env,
+                                normalised_obs_reward=True,
+                                moving_proportion=-1)
 
 # double_pendulum_environment = environment.Rk4Environment(
 #                                 symbols_matrix,
@@ -104,8 +106,8 @@ double_pendulum_environment = environment.Rk4EnvironmentParallel(
 #                                 initial_function=reward_init.initial_function_f(initial_state),
 #                                 max_time=12)
 
-#agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
-agent = agent.Agent(double_pendulum_environment).to(device)
+agent = agent.Agent(double_pendulum_environment,model_path=model_path).to(device)
+#agent = agent.Agent(double_pendulum_environment).to(device)
 state = []
 
 action_arr = []
@@ -188,16 +190,14 @@ reward_arr = np.array(reward_arr)
 subject = 0
 
 plt.figure()
-
 for i in range(parallel_env):
     plt.plot(t_array,state[:,i,0],label=f'theta1_rl_{i}')
-
 plt.legend()
 
 plt.figure()
-
 for i in range(parallel_env):
     plt.plot(t_array,state[:,i,2],label=f'theta2_rl_{i}')
+plt.legend()
 
 # plt.figure()
 # plt.plot(t_array,state[:,1,0],label='theta1_rl2')
